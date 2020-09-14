@@ -1,5 +1,24 @@
-Quick start
-===========
+Compiling and running without Google Benchmark library
+======================================================
+make -f Makefile.standalone
+./test
+
+
+Compiling and running with Google Benchmark libary
+==================================================
+
+git submodule update
+mkdir build_opt
+cd build_opt
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake --build .
+./test
+./gbench
+
+
+
+How to run tests
+================
 - run all tests with the default count:
 
   ./test
