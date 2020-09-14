@@ -1,0 +1,24 @@
+CXX=clang++
+CXX=g++
+# -flto
+CXXFLAGS+=-O3 -g -Wall  -DHAVE_NULL_VALUE
+
+all: test
+
+INCLUDES=item.h item_func.h timer.h sql_type_double.h sql_type_int.h sql_type_bool.h
+
+test: test.o item_test.o item_func.o $(INCLUDES)
+	$(CXX) $(CXXFLAGS) test.o item_test.o item_func.o -o test -lstdc++
+
+test.o: test.cc $(INCLUDES)
+	$(CXX) $(CXXFLAGS) -c test.cc -o test.o
+
+item_test.o: item_test.cc $(INCLUDES)
+	$(CXX) $(CXXFLAGS) -c item_test.cc -o item_test.o
+
+item_func.o: item_func.cc $(INCLUDES)
+	$(CXX) $(CXXFLAGS) -c item_func.cc -o item_func.o
+
+
+clean:
+	rm -f test.o item_test.o item_func.o test

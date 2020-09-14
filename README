@@ -1,0 +1,45 @@
+Quick start
+===========
+- run all tests with the default count:
+
+  ./test
+
+- run all tests with the specified count:
+
+  COUNT=1000000 ./test
+
+- run some tests (specified by the mask) with the default count:
+
+  ./test null     # Expressions related to NULL
+  ./test bool     # Expressions related to the bool data type
+  ./test double   # Expressions related to the double data type
+  ./test ll       # Expressions related to the longlong data type
+
+  ./test null bool # Multiple mask values are allowed
+
+- run some tests with the specified count:
+
+  COUNT=1000000 ./test ll
+
+
+Description
+===========
+
+The program runs benchmarks for various ways of getting Item values for
+the following data types:
+- bool
+- double
+- longlong
+- int32
+
+The int32 methods were added to see if using the int32 API
+(when data ranges allow to do so) would be faster than the longlong API. 
+
+In addition to the traditional MySQL/MariaDB methods
+val_bool(), val_int(), val_real(), 
+every listed above data type has the following three new methods
+(using "double" as an example):
+
+ virtual double val_real_null(bool *null_value_arg); // Pass NULL flag by ptr
+ virtual bool get_double(double *to);                // Return NULL flag
+ virtual Double_null to_double_null();               // Return a struct
