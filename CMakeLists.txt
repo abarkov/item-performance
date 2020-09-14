@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_executable(test test.cc item_test.cc item_func.cc)
+SET_TARGET_PROPERTIES(test PROPERTIES COMPILE_FLAGS "-DHAVE_NULL_VALUE")
 
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 add_subdirectory(benchmark)
