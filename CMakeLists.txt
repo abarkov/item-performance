@@ -11,5 +11,5 @@ SET_TARGET_PROPERTIES(test PROPERTIES COMPILE_FLAGS "-DHAVE_NULL_VALUE")
 set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
 add_subdirectory(benchmark)
 
-add_executable(gbench gbench.cc)
+add_executable(gbench gbench.cc item_test.cc item_func.cc)
 target_link_libraries(gbench benchmark::benchmark)
