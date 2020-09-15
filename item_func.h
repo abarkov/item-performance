@@ -220,43 +220,40 @@ public:
   bool get_longlong(longlong *to) override
   {
     bool tmp;
-    if (Item_func_isnull::get_bool(&tmp))
-      return true;
+    bool is_null= Item_func_isnull::get_bool(&tmp);
     *to= tmp;
-    return false;
+    return is_null;
   }
   bool get_int32(int32 *to) override
   {
     bool tmp;
-    if (Item_func_isnull::get_bool(&tmp))
-      return true;
+    bool is_null= Item_func_isnull::get_bool(&tmp);
     *to= tmp;
-    return false;
+    return is_null;
   }
   bool get_double(double *to) override
   {
     bool tmp;
-    if (Item_func_isnull::get_bool(&tmp))
-      return true;
+    bool is_null= Item_func_isnull::get_bool(&tmp);
     *to= tmp;
-    return false;
+    return is_null;
   }
 
   Bool_null to_bool_null() override;
   Longlong_null to_longlong_null() override
   {
     Bool_null val= Item_func_isnull::to_bool_null();
-    return val.is_null ? Longlong_null() : Longlong_null(val.value);
+    return Longlong_null(val.value, val.is_null);
   }
   Int32_null to_int32_null() override
   {
     Bool_null val= Item_func_isnull::to_bool_null();
-    return val.is_null ? Int32_null() : Int32_null(val.value);
+    return Int32_null(val.value, val.is_null);
   }
   Double_null to_double_null() override
   {
     Bool_null val= Item_func_isnull::to_bool_null();
-    return val.is_null ? Double_null() : Double_null(val.value);
+    return Double_null(val.value, val.is_null);
   }
 };
 

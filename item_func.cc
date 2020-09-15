@@ -252,18 +252,13 @@ bool Item_cond_or::get_double(double *to)
 
 bool Item_func_uminus::val_bool_null(bool *null_value_arg)
 {
-  double nr= Item_func_uminus::val_real_null(null_value_arg);
-  if (*null_value_arg)
-    return false;
-  return (bool) nr;
+  return (bool) Item_func_uminus::val_real_null(null_value_arg);
 }
 
 
 longlong Item_func_uminus::val_int_null(bool *null_value_arg)
 {
   longlong val0= args[0]->val_int_null(null_value_arg);
-  if (*null_value_arg)
-    return 0;
   return -val0;
 }
 
@@ -271,8 +266,6 @@ longlong Item_func_uminus::val_int_null(bool *null_value_arg)
 int32 Item_func_uminus::val_int32_null(bool *null_value_arg)
 {
   int32 val0= args[0]->val_int32_null(null_value_arg);
-  if (*null_value_arg)
-    return 0;
   return -val0;
 }
 
@@ -280,51 +273,45 @@ int32 Item_func_uminus::val_int32_null(bool *null_value_arg)
 bool Item_func_uminus::get_bool(bool *to)
 {
   double nr;
-  if (args[0]->get_double(&nr))
-    return true;
+  bool is_null= args[0]->get_double(&nr);
   *to= (bool) nr;
-  return false;
+  return is_null;
 }
 
 
 bool Item_func_uminus::get_longlong(longlong *to)
 {
-  if (args[0]->get_longlong(to))
-    return true;
+  bool is_null= args[0]->get_longlong(to);
   *to= -(*to);
-  return false;
+  return is_null;
 }
 
 
 bool Item_func_uminus::get_int32(int32 *to)
 {
-  if (args[0]->get_int32(to))
-    return true;
+  bool is_null= args[0]->get_int32(to);
   *to= -(*to);
-  return false;
+  return is_null;
 }
 
 
 bool Item_func_uminus::get_double(double *to)
 {
-  if (args[0]->get_double(to))
-    return true;
+  bool is_null= args[0]->get_double(to);
   *to= -(*to);
-  return false;
+  return is_null;
 }
 
 
 Bool_null Item_func_uminus::to_bool_null()
 {
   Double_null nr= Item_func_uminus::to_double_null();
-  return nr.is_null ? Bool_null() : Bool_null((bool) nr.value);
+  return Bool_null((bool) nr.value, nr.is_null);
 }
 
 double Item_func_uminus::val_real_null(bool *null_value_arg)
 {
   double val0= args[0]->val_real_null(null_value_arg);
-  if (*null_value_arg)
-    return 0.0;
   return -val0;
 }
 
@@ -332,30 +319,21 @@ double Item_func_uminus::val_real_null(bool *null_value_arg)
 Longlong_null Item_func_uminus::to_longlong_null()
 {
   Longlong_null nr0= args[0]->to_longlong_null();
-  if (nr0.is_null)
-    return nr0;
-  nr0.value= -nr0.value;
-  return nr0;
+  return Longlong_null(-nr0.value, nr0.is_null);
 }
 
 
 Int32_null Item_func_uminus::to_int32_null()
 {
   Int32_null nr0= args[0]->to_int32_null();
-  if (nr0.is_null)
-    return nr0;
-  nr0.value= -nr0.value;
-  return nr0;
+  return Int32_null(-nr0.value, nr0.is_null);
 }
 
 
 Double_null Item_func_uminus::to_double_null()
 {
   Double_null nr0= args[0]->to_double_null();
-  if (nr0.is_null)
-    return nr0;
-  nr0.value= -nr0.value;
-  return nr0;
+  return Double_null(-nr0.value, nr0.is_null);
 }
 
 
@@ -432,20 +410,16 @@ Double_null Item_cond_or::to_double_null()
 
 bool Item_func_add::val_bool_null(bool *null_value_arg)
 {
-  double nr= val_real_null(null_value_arg);
-  if (*null_value_arg)
-    return false;
-  return (bool) nr;
+  return (bool) val_real_null(null_value_arg);
 }
 
 
 bool Item_func_add::get_bool(bool *to)
 {
   double nr;
-  if (Item_func_add::get_double(&nr))
-    return true;
+  bool is_null= Item_func_add::get_double(&nr);
   *to= nr;
-  return false;
+  return is_null;
 }
 
 
@@ -455,8 +429,6 @@ longlong Item_func_add::val_int_null(bool *null_value_arg)
   if (*null_value_arg)
     return 0;
   longlong val1= args[1]->val_int_null(null_value_arg);
-  if (*null_value_arg)
-    return 0;
   return val0 + val1;
 }
 
@@ -467,8 +439,6 @@ int32 Item_func_add::val_int32_null(bool *null_value_arg)
   if (*null_value_arg)
     return 0;
   int32 val1= args[1]->val_int32_null(null_value_arg);
-  if (*null_value_arg)
-    return 0;
   return val0 + val1;
 }
 
@@ -486,20 +456,24 @@ bool Item_func_add::get_longlong(longlong *to)
 bool Item_func_add::get_int32(int32 *to)
 {
   int32 val1;
-  if (args[0]->get_int32(to) || args[1]->get_int32(&val1))
+  bool is_null= args[0]->get_int32(to);
+  if (is_null)
     return true;
+  is_null= args[1]->get_int32(&val1);
   *to+= val1;
-  return false;
+  return is_null;
 }
 
 
 bool Item_func_add::get_double(double *to)
 {
   double val1;
-  if (args[0]->get_double(to) || args[1]->get_double(&val1))
+  bool is_null= args[0]->get_double(to);
+  if (is_null)
     return true;
+  is_null= args[1]->get_double(&val1);
   *to+= val1;
-  return false;
+  return is_null;
 }
 
 
@@ -509,8 +483,6 @@ double Item_func_add::val_real_null(bool *null_value_arg)
   if (*null_value_arg)
     return 0.0;
   double val1= args[1]->val_real_null(null_value_arg);
-  if (*null_value_arg)
-    return 0.0;
   return val0 + val1;
 }
 
@@ -518,7 +490,7 @@ double Item_func_add::val_real_null(bool *null_value_arg)
 Bool_null Item_func_add::to_bool_null()
 {
   Double_null nr= Item_func_add::to_double_null();
-  return nr.is_null ? Bool_null() : Bool_null((bool) nr.value);
+  return Bool_null((bool) nr.value, nr.is_null);
 }
 
 Longlong_null Item_func_add::to_longlong_null()
@@ -561,7 +533,10 @@ Longlong_null Item_func_add::to_longlong_null()
   // Version with the operator
 #if 1
   const Longlong_null nr0= args[0]->to_longlong_null();
-  return nr0.is_null ? nr0 : args[1]->to_longlong_null() + nr0.value;
+  if (nr0.is_null)
+    return nr0;
+  const Longlong_null nr1= args[1]->to_longlong_null();
+  return Longlong_null(nr0.value + nr1.value, nr1.is_null);
 #endif
 }
 
@@ -569,7 +544,10 @@ Longlong_null Item_func_add::to_longlong_null()
 Int32_null Item_func_add::to_int32_null()
 {
   const Int32_null nr0= args[0]->to_int32_null();
-  return nr0.is_null ? nr0 : args[1]->to_int32_null() + nr0.value;
+  if (nr0.is_null)
+    return nr0;
+  const Int32_null nr1= args[1]->to_int32_null();
+  return Int32_null(nr0.value + nr1.value, nr1.is_null);
 
 }
 
@@ -602,7 +580,10 @@ Double_null Item_func_add::to_double_null()
 
 #if 0
   const Double_null nr0= args[0]->to_double_null();
-  return nr0.is_null ? nr0 : args[1]->to_double_null() + nr0.value;
+  if (nr0.is_null)
+    return nr0;
+  const Double_null nr1= args[1]->to_double_null();
+  return Double_null(nr0.value + nr1.value, nr1.is_null);
 #endif
 }
 
@@ -809,7 +790,6 @@ bool Item_func_coalesce::get_bool(bool *to)
     if (!args[i]->get_bool(to))
       return false;
   }
-  *to= 0;
   return true;
 }
 
@@ -821,7 +801,6 @@ bool Item_func_coalesce::get_longlong(longlong *to)
     if (!args[i]->get_longlong(to))
       return false;
   }
-  *to= 0;
   return true;
 }
 
@@ -833,7 +812,6 @@ bool Item_func_coalesce::get_int32(int32 *to)
     if (!args[i]->get_int32(to))
       return false;
   }
-  *to= 0;
   return true;
 }
 
@@ -845,7 +823,6 @@ bool Item_func_coalesce::get_double(double *to)
     if (!args[i]->get_double(to))
       return false;
   }
-  *to= 0;
   return true;
 }
 
