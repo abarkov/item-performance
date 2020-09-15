@@ -1,0 +1,3 @@
+BasedOnStyle: LLVM
+SpaceBeforeAssignmentOperators: false
+BreakBeforeBraces: Allman
