@@ -893,3 +893,187 @@ Double_null Item_func_coalesce::to_double_null()
   }
   return Double_null();
 }
+
+/****************************************************************/
+
+void Item_func_last_value::print(string *to)
+{
+  to->append("LAST_VALUE(");
+  args[0]->print(to);
+  for (uint i= 1; i < arg_count; i++)
+  {
+    to->append(",");
+    args[i]->print(to);
+  }
+  to->append(")");
+}
+
+
+#ifdef HAVE_NULL_VALUE
+void Item_func_last_value::evaluate_sideeffects_val_int()
+{
+  for (uint i= 0; i < arg_count-1 ; i++)
+    args[i]->val_int();
+}
+
+void Item_func_last_value::evaluate_sideeffects_val_int32()
+{
+  for (uint i= 0; i < arg_count-1 ; i++)
+    args[i]->val_int32();
+}
+
+bool Item_func_last_value::val_bool()
+{
+  bool tmp;
+  evaluate_sideeffects_val_int();
+  tmp= last_value->val_bool();
+  null_value= last_value->null_value;
+  return tmp;
+}
+
+longlong Item_func_last_value::val_int()
+{
+  longlong tmp;
+  evaluate_sideeffects_val_int();
+  tmp= last_value->val_int();
+  null_value= last_value->null_value;
+  return tmp;
+}
+
+int32 Item_func_last_value::val_int32()
+{
+  longlong tmp;
+  evaluate_sideeffects_val_int32();
+  tmp= last_value->val_int32();
+  null_value= last_value->null_value;
+  return tmp;
+}
+
+double Item_func_last_value::val_real()
+{
+  double tmp;
+  evaluate_sideeffects_val_int();
+  tmp= last_value->val_real();
+  null_value= last_value->null_value;
+  return tmp;
+}
+#endif
+
+
+void Item_func_last_value::evaluate_sideeffects_val_int_null()
+{
+  bool nl;
+  for (uint i= 0; i < arg_count-1 ; i++)
+    args[i]->val_int_null(&nl);
+}
+
+void Item_func_last_value::evaluate_sideeffects_val_int32_null()
+{
+  bool nl;
+  for (uint i= 0; i < arg_count-1 ; i++)
+    args[i]->val_int32_null(&nl);
+}
+
+bool Item_func_last_value::val_bool_null(bool *nl)
+{
+  evaluate_sideeffects_val_int_null();
+  return last_value->val_bool_null(nl);
+}
+
+longlong Item_func_last_value::val_int_null(bool *nl)
+{
+  evaluate_sideeffects_val_int_null();
+  return last_value->val_int_null(nl);
+}
+
+int32 Item_func_last_value::val_int32_null(bool *nl)
+{
+  evaluate_sideeffects_val_int32_null();
+  return last_value->val_int32_null(nl);
+}
+
+double Item_func_last_value::val_real_null(bool *nl)
+{
+  evaluate_sideeffects_val_int_null();
+  return last_value->val_real_null(nl);
+}
+
+
+void Item_func_last_value::evaluate_sideeffects_get_longlong()
+{
+  longlong nr;
+  for (uint i= 0; i < arg_count-1 ; i++)
+    args[i]->get_longlong(&nr);
+}
+
+bool Item_func_last_value::get_bool(bool *to)
+{
+  evaluate_sideeffects_get_longlong();
+  return last_value->get_bool(to);
+}
+
+bool Item_func_last_value::get_longlong(longlong *to)
+{
+  evaluate_sideeffects_get_longlong();
+  return last_value->get_longlong(to);
+}
+
+bool Item_func_last_value::get_double(double *to)
+{
+  evaluate_sideeffects_get_longlong();
+  return last_value->get_double(to);
+}
+
+
+void Item_func_last_value::evaluate_sideeffects_get_int32()
+{
+  int32 nr;
+  for (uint i= 0; i < arg_count-1 ; i++)
+    args[i]->get_int32(&nr);
+}
+
+
+bool Item_func_last_value::get_int32(int32 *to)
+{
+  evaluate_sideeffects_get_int32();
+  return last_value->get_int32(to);
+}
+
+
+
+void Item_func_last_value::evaluate_sideeffects_to_longlong_null()
+{
+  for (uint i= 0; i < arg_count-1 ; i++)
+    args[i]->to_longlong_null();
+}
+
+void Item_func_last_value::evaluate_sideeffects_to_int32_null()
+{
+  for (uint i= 0; i < arg_count-1 ; i++)
+    args[i]->to_int32_null();
+}
+
+
+Bool_null Item_func_last_value::to_bool_null()
+{
+  evaluate_sideeffects_to_longlong_null();
+  return last_value->to_bool_null();
+}
+
+Longlong_null Item_func_last_value::to_longlong_null()
+{
+  evaluate_sideeffects_to_longlong_null();
+  return last_value->to_longlong_null();
+}
+
+Int32_null Item_func_last_value::to_int32_null()
+{
+  evaluate_sideeffects_to_int32_null();
+  return last_value->to_int32_null();
+}
+
+Double_null Item_func_last_value::to_double_null()
+{
+  evaluate_sideeffects_to_longlong_null();
+  return last_value->to_double_null();
+}

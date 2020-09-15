@@ -292,5 +292,53 @@ public:
 };
 
 
+class Item_func_last_value: public Item_hybrid_func
+{
+  Item *last_value;
+  void fix_fields()
+  {
+    last_value= args[arg_count-1];
+    m_field_type= last_value->field_type();
+  }
+public:
+  Item_func_last_value(Item *a)
+   :Item_hybrid_func(a) { fix_fields(); }
+  Item_func_last_value(Item *a, Item *b)
+   :Item_hybrid_func(a,b) { fix_fields(); }
+  Item_func_last_value(Item *a, Item *b, Item *c)
+   :Item_hybrid_func(a,b,c) { fix_fields(); }
+  void print(string *to) override;
+#ifdef HAVE_NULL_VALUE
+  void evaluate_sideeffects_val_int();
+  void evaluate_sideeffects_val_int32();
+  bool val_bool() override;
+  double val_real() override;
+  longlong val_int() override;
+  int32 val_int32() override;
+#endif
+
+  void evaluate_sideeffects_val_int_null();
+  void evaluate_sideeffects_val_int32_null();
+  bool val_bool_null(bool *null_value_arg) override;
+  longlong val_int_null(bool *null_value_arg) override;
+  int32 val_int32_null(bool *null_value_arg) override;
+  double val_real_null(bool *null_value_arg) override;
+
+  void evaluate_sideeffects_get_longlong();
+  void evaluate_sideeffects_get_int32();
+  bool get_bool(bool *to) override;
+  bool get_longlong(longlong *to) override;
+  bool get_int32(int32 *to) override;
+  bool get_double(double *to) override;
+
+  void evaluate_sideeffects_to_longlong_null();
+  void evaluate_sideeffects_to_int32_null();
+  Bool_null to_bool_null() override;
+  Longlong_null to_longlong_null() override;
+  Int32_null to_int32_null() override;
+  Double_null to_double_null() override;
+};
+
+
 
 #endif

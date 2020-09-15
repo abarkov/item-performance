@@ -164,6 +164,26 @@ public:
 };
 
 
+class Test_bool_last_value: public Test
+{
+public:
+  const char *name() const override { return "bool_last_value"; }
+  MethodStat run(ulonglong count) const override
+  {
+    Item_null nl;
+    Item_bool b0(false);
+    Item_func_last_value lv_b0(&b0);
+    Item_func_last_value lv_b0_b0_b0(&b0, &b0, &b0);
+ 
+    Item *items[]= {&lv_b0, &lv_b0_b0_b0, NULL};
+    MethodStat st;
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_b(count);
+    return st;
+  }
+};
+
+
 class Test_ll: public Test
 {
 public:
@@ -241,6 +261,26 @@ public:
       NULL
     };
 
+    MethodStat st;
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_ll(count);
+    return st;
+  }
+};
+
+
+class Test_ll_last_value: public Test
+{
+public:
+  const char *name() const override { return "ll_last_value"; }
+  MethodStat run(ulonglong count) const override
+  {
+    Item_null nl;
+    Item_int b0(x);
+    Item_func_last_value lv_b0(&b0);
+    Item_func_last_value lv_b0_b0_b0(&b0, &b0, &b0);
+ 
+    Item *items[]= {&lv_b0, &lv_b0_b0_b0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
       st+= items[i]->test_ll(count);
@@ -339,20 +379,43 @@ public:
 };
 
 
+class Test_double_last_value: public Test
+{
+public:
+  const char *name() const override { return "double_last_value"; }
+  MethodStat run(ulonglong count) const override
+  {
+    Item_null nl;
+    Item_int b0(x);
+    Item_func_last_value lv_b0(&b0);
+    Item_func_last_value lv_b0_b0_b0(&b0, &b0, &b0);
+ 
+    Item *items[]= {&lv_b0, &lv_b0_b0_b0, NULL};
+    MethodStat st;
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_d(count);
+    return st;
+  }
+};
+
+
 
 void run(const char *name, ulonglong count)
 {
-  static const Test_null_misc   test_null_misc;
-  static const Test_b           test_b;
-  static const Test_b_or        test_b_or;
-  static const Test_b_coalesce  test_b_coalesce;
-  static const Test_bool_isnull test_null_isnull;
-  static const Test_ll          test_ll;
-  static const Test_ll_plus     test_ll_plus;
-  static const Test_ll_coalesce test_ll_coalesce;
-  static const Test_d           test_d;
-  static const Test_d_plus      test_d_plus;
-  static const Test_d_coalesce  test_d_coalesce;
+  static const Test_null_misc         test_null_misc;
+  static const Test_b                 test_b;
+  static const Test_b_or              test_b_or;
+  static const Test_b_coalesce        test_b_coalesce;
+  static const Test_bool_isnull       test_null_isnull;
+  static const Test_bool_last_value   test_bool_last_value;
+  static const Test_ll                test_ll;
+  static const Test_ll_plus           test_ll_plus;
+  static const Test_ll_coalesce       test_ll_coalesce;
+  static const Test_ll_last_value     test_ll_last_value;
+  static const Test_d                 test_d;
+  static const Test_d_plus            test_d_plus;
+  static const Test_d_coalesce        test_d_coalesce;
+  static const Test_double_last_value test_double_last_value;
 
   static const Test *tests[]=
   {
@@ -361,12 +424,15 @@ void run(const char *name, ulonglong count)
     &test_b,
     &test_b_or,
     &test_b_coalesce,
+    &test_bool_last_value,
     &test_ll,
     &test_ll_plus,
     &test_ll_coalesce,
+    &test_ll_last_value,
     &test_d,
     &test_d_plus,
     &test_d_coalesce,
+    &test_double_last_value,
     NULL
   };
 
