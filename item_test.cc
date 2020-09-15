@@ -13,30 +13,31 @@ public:
   longlong sum_ll;
   double sum_d;
   double time_spent;
-  Stat(): sum_ll(0), sum_d(0), time_spent(0) { }
+  const char *method;
+  Stat(): sum_ll(0), sum_d(0), time_spent(0), method("") { }
 
-  void print_b(Item *item, const char *method)
+  void print_b(Item *item)
   {
     string s;
     item->print(&s);
     printf("%s %-16s %f %s %lld\n", COMPILER, method, time_spent, s.c_str(), sum_ll);
   }
 
-  void print_ll(Item *item, const char *method)
+  void print_ll(Item *item)
   {
     string s;
     item->print(&s);
     printf("%s %-16s %f %s %lld\n", COMPILER, method, time_spent, s.c_str(), sum_ll);
   }
 
-  void print_int32(Item *item, const char *method)
+  void print_int32(Item *item)
   {
     string s;
     item->print(&s);
     printf("%s %-16s %f %s %lld\n", COMPILER, method, time_spent, s.c_str(), sum_ll);
   }
 
-  void print_d(Item *item, const char *method)
+  void print_d(Item *item)
   {
     string s;
     item->print(&s);
@@ -58,7 +59,8 @@ double Item::test_b_old(ulonglong count)
       st.sum_ll+= b;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_b(this, "val_bool");
+  st.method= "val_bool";
+  st.print_b(this);
   return st.time_spent;
 #endif
   return 0;
@@ -77,7 +79,8 @@ double Item::test_d_old(ulonglong count)
       st.sum_d+= dbl;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_d(this, "val_real");
+  st.method= "val_real";
+  st.print_d(this);
   return st.time_spent;
 #endif
   return 0;
@@ -96,7 +99,8 @@ double Item::test_ll_old(ulonglong count)
       st.sum_ll+= tmp;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_ll(this, "val_int");
+  st.method= "val_int";
+  st.print_ll(this);
   return st.time_spent;
 #endif
   return 0;
@@ -116,7 +120,8 @@ double Item::test_int32_old(ulonglong count)
       st.sum_ll+= tmp;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_int32(this, "val_int32");
+  st.method= "val_int32";
+  st.print_int32(this);
   return st.time_spent;
 #endif
   return 0;
@@ -136,7 +141,8 @@ double Item::test_b_prm(ulonglong count)
       st.sum_ll+= b;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_b(this, "val_bool_null");
+  st.method= "val_bool_null";
+  st.print_b(this);
   return st.time_spent;
 }
 
@@ -152,7 +158,8 @@ double Item::test_b_get(ulonglong count)
       st.sum_ll+= tmp;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_b(this, "get_bool");
+  st.method= "get_bool";
+  st.print_b(this);
   return st.time_spent;
 }
 
@@ -170,7 +177,8 @@ double Item::test_d_prm(ulonglong count)
       st.sum_d+= dbl;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_d(this, "val_real_null");
+  st.method= "val_real_null";
+  st.print_d(this);
   return st.time_spent;
 }
 
@@ -186,7 +194,8 @@ double Item::test_d_get(ulonglong count)
       st.sum_d+= tmp;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_d(this, "get_double");
+  st.method= "get_double";
+  st.print_d(this);
   return st.time_spent;
 }
 
@@ -203,7 +212,8 @@ double Item::test_ll_prm(ulonglong count)
       st.sum_ll+= tmp;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_ll(this, "val_int_null");
+  st.method= "val_int_null";
+  st.print_ll(this);
   return st.time_spent;
 }
 
@@ -220,7 +230,8 @@ double Item::test_int32_prm(ulonglong count)
       st.sum_ll+= tmp;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_int32(this, "val_int32_null");
+  st.method= "val_int32_null";
+  st.print_int32(this);
   return st.time_spent;
 }
 
@@ -236,7 +247,8 @@ double Item::test_ll_get(ulonglong count)
       st.sum_ll+= tmp;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_ll(this, "get_longlong");
+  st.method= "get_longlong";
+  st.print_ll(this);
   return st.time_spent;
 }
 
@@ -252,7 +264,8 @@ double Item::test_int32_get(ulonglong count)
       st.sum_ll+= tmp;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_int32(this, "get_int32");
+  st.method= "get_int32";
+  st.print_int32(this);
   return st.time_spent;
 }
 
@@ -268,7 +281,8 @@ double Item::test_b_new(ulonglong count)
       st.sum_ll+= res.value;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_b(this, "to_bool_null");
+  st.method= "to_bool_null";
+  st.print_b(this);
   return st.time_spent;
 }
 
@@ -284,7 +298,8 @@ double Item::test_d_new(ulonglong count)
       st.sum_d+= res.value;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_d(this, "to_double_null");
+  st.method= "to_double_null";
+  st.print_d(this);
   return st.time_spent;
 }
 
@@ -300,7 +315,8 @@ double Item::test_ll_new(ulonglong count)
       st.sum_ll+= res.value;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_ll(this, "to_longlong_null");
+  st.method= "to_longlong_null";
+  st.print_ll(this);
   return st.time_spent;
 }
 
@@ -316,6 +332,7 @@ double Item::test_int32_new(ulonglong count)
       st.sum_ll+= res.value;
   }
   st.time_spent= Timer().diff(t0);
-  st.print_int32(this, "to_int32_null");
+  st.method= "to_int32_null";
+  st.print_int32(this);
   return st.time_spent;
 }
