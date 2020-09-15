@@ -28,10 +28,34 @@ public:
 };
 
 
-class Test_n: public Test
+class Test_null_misc: public Test
 {
 public:
-  const char *name() const override { return "null"; }
+  const char *name() const override { return "null_misc"; }
+  MethodStat run(ulonglong count) const override
+  {
+    Item_null nl;                               // NULL
+    Item_bool b0(false);                        // FALSE
+    Item_real d0(x);                            // 0e0
+    Item_int ll0(x);                            // 0
+    Item_func_coalesce coalesce_nl(&nl);        // COALESCE(NULL)
+    Item_func_coalesce coalesce_nl_nl(&nl,&nl); // COALESCE(NULL,NULL)
+
+    MethodStat st;
+    st+= nl.test_b(count);
+    st+= nl.test_ll(count);
+    st+= nl.test_d(count);
+    st+= coalesce_nl.test_b(count);
+    st+= coalesce_nl_nl.test_b(count);
+    return st;
+  }
+};
+
+
+class Test_bool_isnull: public Test
+{
+public:
+  const char *name() const override { return "bool_isnull"; }
   MethodStat run(ulonglong count) const override
   {
     Item_null nl;                               // NULL
@@ -42,16 +66,6 @@ public:
     Item_func_isnull isnull_b0(&b0);            // FALSE IS NULL
     Item_func_isnull isnull_ll0(&ll0);          // 0 IS NULL
     Item_func_isnull isnull_d0(&d0);            // 0e0 IS NULL
-    Item_func_coalesce coalesce_nl(&nl);        // COALESCE(NULL)
-    Item_func_coalesce coalesce_nl_nl(&nl,&nl); // COALESCE(NULL,NULL)
-
-    MethodStat st;
-
-    st+= nl.test_b(count);                // NULL
-    st+= nl.test_ll(count);               // NULL
-    st+= nl.test_d(count);                // NULL
-    st+= coalesce_nl.test_b(count);
-    st+= coalesce_nl_nl.test_b(count);
 
     Item *items_b[]=
     {
@@ -61,6 +75,7 @@ public:
       &isnull_d0,
       NULL
     };
+    MethodStat st;
     for (uint i= 0; items_b[i]; i++)
       st+= items_b[i]->test_b(count);
     return st;
@@ -327,10 +342,11 @@ public:
 
 void run(const char *name, ulonglong count)
 {
-  static const Test_n           test_n;
+  static const Test_null_misc   test_null_misc;
   static const Test_b           test_b;
   static const Test_b_or        test_b_or;
   static const Test_b_coalesce  test_b_coalesce;
+  static const Test_bool_isnull test_null_isnull;
   static const Test_ll          test_ll;
   static const Test_ll_plus     test_ll_plus;
   static const Test_ll_coalesce test_ll_coalesce;
@@ -340,7 +356,8 @@ void run(const char *name, ulonglong count)
 
   static const Test *tests[]=
   {
-    &test_n,
+    &test_null_misc,
+    &test_null_isnull,
     &test_b,
     &test_b_or,
     &test_b_coalesce,
