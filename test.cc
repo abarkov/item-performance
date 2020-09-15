@@ -34,21 +34,35 @@ public:
   const char *name() const override { return "null"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;
-    Item_bool b0(false);
-    Item_real d0(x);
-    Item_int ll0(x);
+    Item_null nl;                               // NULL
+    Item_bool b0(false);                        // FALSE
+    Item_real d0(x);                            // 0e0
+    Item_int ll0(x);                            // 0
+    Item_func_isnull isnull_nl(&nl);            // NULL IS NULL
+    Item_func_isnull isnull_b0(&b0);            // FALSE IS NULL
+    Item_func_isnull isnull_ll0(&ll0);          // 0 IS NULL
+    Item_func_isnull isnull_d0(&d0);            // 0e0 IS NULL
+    Item_func_coalesce coalesce_nl(&nl);        // COALESCE(NULL)
+    Item_func_coalesce coalesce_nl_nl(&nl,&nl); // COALESCE(NULL,NULL)
+
     MethodStat st;
 
-    st+= nl.test_b(count);                            // NULL
-    st+= nl.test_ll(count);                           // NULL
-    st+= nl.test_d(count);                            // NULL
-    st+= Item_func_isnull(&nl).test_b(count);         // NULL IS NULL
-    st+= Item_func_isnull(&b0).test_b(count);         // FALSE IS NULL
-    st+= Item_func_isnull(&ll0).test_b(count);        // 0 IS NULL
-    st+= Item_func_isnull(&d0).test_b(count);         // 0e0 IS NULL
-    st+= Item_func_coalesce(&nl).test_b(count);       // COALESCE(NULL)
-    st+= Item_func_coalesce(&nl,&nl).test_b(count);   // COALESCE(NULL,NULL)
+    st+= nl.test_b(count);                // NULL
+    st+= nl.test_ll(count);               // NULL
+    st+= nl.test_d(count);                // NULL
+    st+= coalesce_nl.test_b(count);
+    st+= coalesce_nl_nl.test_b(count);
+
+    Item *items_b[]=
+    {
+      &isnull_nl,
+      &isnull_b0,
+      &isnull_ll0,
+      &isnull_d0,
+      NULL
+    };
+    for (uint i= 0; items_b[i]; i++)
+      st+= items_b[i]->test_b(count);
     return st;
   }
 };
@@ -60,11 +74,12 @@ public:
   const char *name() const override { return "bool_misc"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_bool b0(false);
-    Item_bool b1(true);
+    Item_bool b0(false);                // FALSE
+    Item_bool b1(true);                 // TRUE
+    Item *items[]= {&b0, &b1, NULL};
     MethodStat st;
-    st+= b0.test_b(count);                          // TRUE
-    st+= b1.test_b(count);                          // FALSE
+    for (uint i= 0 ; items[i]; i++)
+      st+= items[i]->test_b(count);
     return st;
   }
 };
@@ -79,19 +94,36 @@ public:
     Item_null nl;
     Item_bool b0(false);
     Item_bool b1(true);
-    Item_cond_or or_b0_nl(&b0, &nl);
-    MethodStat st;
 
-    st+= Item_cond_or(&b0, &nl).test_b(count);        // FALSE OR NULL
-    st+= Item_cond_or(&nl, &b0).test_b(count);        // NULL OR FALSE
-    st+= Item_cond_or(&nl, &b1).test_b(count);        // NULL OR TRUE
-    st+= Item_cond_or(&nl, &nl).test_b(count);        // NULL OR NULL
-    st+= Item_cond_or(&b0, &nl, &b1).test_b(count);   // FALSE OR NULL OR TRUE
-    st+= Item_cond_or(&or_b0_nl, &b1).test_b(count);  // (FALSE OR NULL) OR TRUE
-    st+= Item_cond_or(&b1, &b1).test_b(count);        // TRUE OR TRUE
-    st+= Item_cond_or(&b1, &b0).test_b(count);        // TRUE OR FALSE
-    st+= Item_cond_or(&b0, &b0).test_b(count);        // FALSE OR FALSE
-    st+= Item_cond_or(&b0, &b1).test_b(count);        // FALSE OR TRUE
+    Item_cond_or or_nl_nl(&nl, &nl);        // NULL OR NULL
+    Item_cond_or or_nl_b0(&nl, &b0);        // NULL OR FALSE
+    Item_cond_or or_nl_b1(&nl, &b1);        // NULL OR TRUE
+    Item_cond_or or_b0_nl(&b0, &nl);        // FALSE OR NULL
+    Item_cond_or or_b0_b0(&b0, &b0);        // FALSE OR FALSE
+    Item_cond_or or_b0_b1(&b0, &b1);        // FALSE OR TRUE
+    Item_cond_or or_b1_b0(&b1, &b0);        // TRUE OR FALSE
+    Item_cond_or or_b1_b1(&b1, &b1);        // TRUE OR TRUE
+
+    Item_cond_or or_b0_nl_b1(&b0, &nl, &b1);   // FALSE OR NULL OR TRUE
+    Item_cond_or or_b0_nl__b1(&or_b0_nl, &b1);  // (FALSE OR NULL) OR TRUE
+
+    Item *items[]=
+    {
+      &or_nl_nl,
+      &or_nl_b0,
+      &or_nl_b1,
+      &or_b0_nl,
+      &or_b0_b0,
+      &or_b0_b1,
+      &or_b1_b0,
+      &or_b1_b1,
+      &or_b0_nl_b1,
+      &or_b0_nl__b1,
+      NULL
+    };
+    MethodStat st;
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_b(count);
     return st;
   }
 };
@@ -105,9 +137,13 @@ public:
   {
     Item_null nl;
     Item_bool b0(false);
+    Item_func_coalesce coalesce_b0(&b0);         // COALESCE(FALSE)
+    Item_func_coalesce coalesce_nl_b0(&nl, &b0); // COALESCE(NULL,FALSE)
+ 
+    Item *items[]= {&coalesce_b0, &coalesce_nl_b0, NULL};
     MethodStat st;
-    st+= Item_func_coalesce(&b0).test_b(count);      // COALESCE(FALSE)
-    st+= Item_func_coalesce(&nl,&b0).test_b(count);  // COALESCE(NULL,FALSE)
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_b(count);
     return st;
   }
 };
@@ -119,14 +155,14 @@ public:
   const char *name() const override { return "ll_misc"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_int ll0(x);
-    Item_func_uminus uminus_ll0(&ll0);
-    Item_func_uminus uminus_uminus_ll0(&uminus_ll0);
+    Item_int ll0(x);                                    // INT
+    Item_func_uminus uminus_ll0(&ll0);                  // -INT
+    Item_func_uminus uminus_uminus_ll0(&uminus_ll0);    // -(-INT)
+ 
+    Item *items[]= {&ll0, &uminus_ll0, &uminus_uminus_ll0, NULL};
     MethodStat st;
-
-    st+= ll0.test_ll(count);                     // INT
-    st+= uminus_ll0.test_ll(count);              // -INT
-    st+= uminus_uminus_ll0.test_ll(count);       // -(-INT)
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_ll(count);
     return st;
   }
 };
@@ -138,19 +174,31 @@ public:
   const char *name() const override { return "ll_plus"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;
-    Item_int ll0(x);
-    Item_int ll1(y);
-    Item_func_add add_ll_ll(&ll0, &ll1);
-    Item_func_add add_ll_ll_ll(&add_ll_ll, &ll1);
-    Item_func_add add_ll_ll_ll_ll(&add_ll_ll_ll, &ll1);
-    MethodStat st;
+    Item_null nl;                                         // NULL
+    Item_int ll0(x);                                      // INT
+    Item_int ll1(y);                                      // INT
 
-    st+= Item_func_add(&ll0, &nl).test_ll(count);             // (INT + NULL)
-    st+= Item_func_add(&nl, &ll0).test_ll(count);             // (NULL + INT)
-    st+= add_ll_ll.test_ll(count);                            // (INT + INT)
-    st+= Item_func_add(&add_ll_ll, &ll0).test_ll(count);      // (INT + INT) + INT
-    st+= Item_func_add(&add_ll_ll_ll_ll, &ll0).test_ll(count);// (INT + ...+ INT)
+    Item_func_add add_ll0_nl(&ll0, &nl);             // (INT + NULL)
+    Item_func_add add_nl_ll0(&nl, &ll0);             // (NULL + INT)
+
+    Item_func_add add_ll_ll(&ll0, &ll1);                  // INT + INT
+    Item_func_add add_ll_ll_ll0(&add_ll_ll, &ll0);  // (INT + INT) + INT
+    Item_func_add add_ll_ll_ll1(&add_ll_ll, &ll1);         // (INT+INT)+INT
+    Item_func_add add_ll_ll_ll_ll(&add_ll_ll_ll0, &ll1);   //
+    Item_func_add add_ll_ll_ll_ll_ll0(&add_ll_ll_ll_ll, &ll0);// (INT + ...+ INT)
+
+    Item *items[]=
+    {
+      &add_ll0_nl,
+      &add_nl_ll0,
+      &add_ll_ll,
+      &add_ll_ll_ll0,
+      &add_ll_ll_ll_ll_ll0,
+      NULL
+    };
+    MethodStat st;
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_ll(count);
     return st;
   }
 };
@@ -165,13 +213,22 @@ public:
     Item_null nl;
     Item_int ll0(x);
     Item_int ll1(y);
-    Item_func_coalesce coalesce_ll(&ll0);
-    Item_func_coalesce coalesce_nl_nl(&nl, &nl);
-    Item_func_coalesce coalesce_nl_nl__ll0(&coalesce_nl_nl, &ll0);
+    Item_func_coalesce coalesce_ll(&ll0);           // COALESCE(INT)
+    Item_func_coalesce coalesce_nl_nl(&nl, &nl);    // COALESCE(NULL,NULL)
+    Item_func_coalesce coalesce_nl_ll0(&nl,&ll0);   // COALESCE(NULL,INT)
+    Item_func_coalesce coalesce_nl_nl__ll0(&coalesce_nl_nl, &ll0);//((NULL,NULL),INT)
+
+    Item *items[]=
+    {
+      &coalesce_ll,
+      &coalesce_nl_ll0,
+      &coalesce_nl_nl__ll0,
+      NULL
+    };
+
     MethodStat st;
-    st+= coalesce_ll.test_ll(count);                 // COALESCE(INT)
-    st+= coalesce_nl_nl__ll0.test_ll(count); // COALESCE(COALESCE(NULL,NULL), INT)
-    st+= Item_func_coalesce(&nl,&ll0).test_ll(count); // COALESCE(NULL,INT)
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_ll(count);
     return st;
   }
 };
@@ -183,14 +240,20 @@ public:
   const char *name() const override { return "double_misc"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_real d0(x);
-    Item_func_uminus uminus_d0(&d0);
-    Item_func_uminus uminus_uminus_d0(&uminus_d0);
-    MethodStat st;
+    Item_real d0(x);                                 // DBL
+    Item_func_uminus uminus_d0(&d0);                 // -DBL
+    Item_func_uminus uminus_uminus_d0(&uminus_d0);   // -(-DBL)
 
-    st+= d0.test_d(count);               // DBL
-    st+= uminus_d0.test_d(count);        // -DBL
-    st+= uminus_uminus_d0.test_d(count); // -(-DBL)
+    MethodStat st;
+    Item *items[]=
+    {
+      &d0,
+      &uminus_d0,
+      &uminus_uminus_d0,
+      NULL
+    };
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_d(count);
     return st;
   }
 };
@@ -205,15 +268,27 @@ public:
     Item_null nl;
     Item_real d0(x);
     Item_real d1(y);
-    Item_func_add add_d_d(&d0, &d1);
-    Item_func_add add_d_d_d(&add_d_d, &d1);
-    Item_func_add add_d_d_d_d(&add_d_d_d, &d1);
+
+    Item_func_add add_nl_d0(&nl, &d0);                // (NULL+ DBL)
+    Item_func_add add_d0_nl(&d0, &nl);                // (DBL + NULL)
+    Item_func_add add_d_d(&d0, &d1);                  // (DBL + DBL)
+    Item_func_add add_d_d_d0(&add_d_d, &d0);          // (DBL + DBL) + DBL
+    Item_func_add add_d_d_d1(&add_d_d, &d1);          // (DBL + DBL) + DBL
+    Item_func_add add_d_d_d_d(&add_d_d_d1, &d1);      // (DBL +...+DBL)
+    Item_func_add add_d_d_d_d_d(&add_d_d_d_d, &d0);   // (DBL +...+DBL)
+
+    Item *items[]=
+    {
+      &add_nl_d0,
+      &add_d0_nl,
+      &add_d_d,
+      &add_d_d_d0,
+      &add_d_d_d_d_d,
+      NULL
+    };
     MethodStat st;
-    st+= Item_func_add(&nl, &d0).test_d(count);          // (NULL+ DBL)
-    st+= Item_func_add(&d0, &nl).test_d(count);          // (DBL + NULL)
-    st+= add_d_d.test_d(count);                          // (DBL + DBL)
-    st+= Item_func_add(&add_d_d, &d0).test_d(count);     // (DBL + DBL) + DBL
-    st+= Item_func_add(&add_d_d_d_d, &d0).test_d(count); // (DBL +...+DBL)
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_d(count);
     return st;
   }
 };
@@ -227,14 +302,23 @@ public:
   {
     Item_null nl;
     Item_real d0(x);
-    Item_func_coalesce coalesce_nl_nl(&nl, &nl);
-    Item_func_coalesce coalesce_nl_nl_d0(&nl, &nl, &d0);
-    Item_func_coalesce coalesce_nl_nl__d0(&coalesce_nl_nl, &d0);
+    Item_func_coalesce coalesce_d0(&d0);         // COALESCE(DBL)
+    Item_func_coalesce coalesce_nl_d0(&nl, &d0); // COALESCE(NULL,DBL)
+    Item_func_coalesce coalesce_nl_nl(&nl, &nl); // COALESCE(NULL,NULL)
+    Item_func_coalesce coalesce_nl_nl_d0(&nl, &nl, &d0); // (NULL,NULL,DBL)
+    Item_func_coalesce coalesce_nl_nl__d0(&coalesce_nl_nl, &d0);//((NULL,NULL),DBL)
+
     MethodStat st;
-    st+= Item_func_coalesce(&d0).test_d(count);      // COALESCE(DBL)
-    st+= Item_func_coalesce(&nl,&d0).test_ll(count); // COALESCE(NULL,DBL)
-    st+= coalesce_nl_nl_d0.test_ll(count);           // COALESCE(NULL,NULL,DBL)
-    st+= coalesce_nl_nl__d0.test_ll(count);          // COALESCE((NULL,NULL),DBL)
+    Item *items[]=
+    {
+      &coalesce_d0,
+      &coalesce_nl_d0,
+      &coalesce_nl_nl_d0,
+      &coalesce_nl_nl__d0,
+      NULL
+    };
+    for (uint i= 0; items[i]; i++)
+      st+= items[i]->test_d(count);
     return st;
   }
 };
