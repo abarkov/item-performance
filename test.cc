@@ -386,7 +386,7 @@ public:
   MethodStat run(ulonglong count) const override
   {
     Item_null nl;
-    Item_int b0(x);
+    Item_real b0(x);
     Item_func_last_value lv_b0(&b0);
     Item_func_last_value lv_b0_b0_b0(&b0, &b0, &b0);
  
