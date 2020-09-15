@@ -7,8 +7,8 @@ class Bool_null
 public:
   bool value;
   bool is_null;
-  explicit Bool_null(bool val)
-   :value(val), is_null(false)
+  explicit Bool_null(bool val, bool is_null= false)
+   :value(val), is_null(is_null)
   { }
   Bool_null()
    :value(false), is_null(true)

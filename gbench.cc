@@ -122,11 +122,23 @@ std::unique_ptr<Item> g_int2(new Item_int(0x77));
 std::unique_ptr<Item> g_uminus(new Item_func_uminus(g_int1.get()));
 std::unique_ptr<Item> g_isnull(new Item_func_isnull(g_int1.get()));
 std::unique_ptr<Item> g_add(new Item_func_add(g_uminus.get(), g_isnull.get()));
+std::unique_ptr<Item> g_coalesce1(new Item_func_coalesce(g_int1.get()));
+std::unique_ptr<Item> g_real1(new Item_real(1.0));
+std::unique_ptr<Item> g_null1(new Item_null);
+std::unique_ptr<Item> g_null2(new Item_null);
+std::unique_ptr<Item> g_coalesce3(new Item_func_coalesce(g_null1.get(),
+                                                         g_null2.get(),
+                                                         g_real1.get()));
+std::unique_ptr<Item> g_bool(new Item_bool(false));
+std::unique_ptr<Item> g_coalesce_bool(new Item_func_coalesce(g_bool.get()));
 
 TEST_SET(Item_int, g_int1);
 TEST_SET(Item_func_uminus, g_uminus);
 TEST_SET(Item_func_isnull, g_isnull);
 TEST_SET(Item_func_add, g_add);
+TEST_SET(Item_func_coalesce1, g_coalesce1);
+TEST_SET(Item_func_coalesce3, g_coalesce3);
+TEST_SET(Item_func_coalesce_bool, g_coalesce_bool);
 
 } // namespace
 

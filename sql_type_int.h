@@ -11,8 +11,8 @@ class Int32_null
 public:
   int32 value;
   bool is_null;
-  explicit Int32_null(longlong val)
-   :value(val), is_null(false)
+  explicit Int32_null(longlong val, bool is_null= false)
+   :value(val), is_null(is_null)
   { }
   Int32_null()
    :value(0), is_null(true)
@@ -31,8 +31,8 @@ class Longlong_null
 public:
   longlong value;
   bool is_null;
-  explicit Longlong_null(longlong val)
-   :value(val), is_null(false)
+  explicit Longlong_null(longlong val, bool is_null= false)
+   :value(val), is_null(is_null)
   { }
   Longlong_null()
    :value(0), is_null(true)

@@ -6,8 +6,8 @@ class Double_null
 public:
   double value;
   bool is_null;
-  explicit Double_null(double val)
-   :value(val), is_null(false)
+  explicit Double_null(double val, bool is_null= false)
+   :value(val), is_null(is_null)
   { }
   Double_null()
    :value(0), is_null(true)
