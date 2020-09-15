@@ -9,6 +9,16 @@ namespace
 {
 
 #define TEST_SET(NAME, ITEM)                                                   \
+  void BM_##NAME##_get_bool(benchmark::State &state)                           \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      bool value;                                                              \
+      ITEM->get_bool(&value);                                                  \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_get_bool);                                             \
+                                                                               \
   void BM_##NAME##_val_bool_null(benchmark::State &state)                      \
   {                                                                            \
     for (auto _ : state)                                                       \
@@ -25,6 +35,16 @@ namespace
       ITEM->to_bool_null();                                                    \
   }                                                                            \
   BENCHMARK(BM_##NAME##_to_bool_null);                                         \
+                                                                               \
+  void BM_##NAME##_get_longlong(benchmark::State &state)                       \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      longlong value;                                                          \
+      ITEM->get_longlong(&value);                                              \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_get_longlong);                                         \
                                                                                \
   void BM_##NAME##_val_int_null(benchmark::State &state)                       \
   {                                                                            \
@@ -43,6 +63,16 @@ namespace
   }                                                                            \
   BENCHMARK(BM_##NAME##_to_longlong_null);                                     \
                                                                                \
+  void BM_##NAME##_get_int32(benchmark::State &state)                          \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      int32 value;                                                             \
+      ITEM->get_int32(&value);                                                 \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_get_int32);                                            \
+                                                                               \
   void BM_##NAME##_val_int32_null(benchmark::State &state)                     \
   {                                                                            \
     for (auto _ : state)                                                       \
@@ -59,6 +89,16 @@ namespace
       ITEM->to_int32_null();                                                   \
   }                                                                            \
   BENCHMARK(BM_##NAME##_to_int32_null);                                        \
+                                                                               \
+  void BM_##NAME##_get_double(benchmark::State &state)                         \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      double value;                                                            \
+      ITEM->get_double(&value);                                                \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_get_double);                                           \
                                                                                \
   void BM_##NAME##_val_real_null(benchmark::State &state)                      \
   {                                                                            \
