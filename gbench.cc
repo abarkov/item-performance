@@ -79,10 +79,9 @@ namespace
 
 std::unique_ptr<Item> g_int1(new Item_int(0x77));
 std::unique_ptr<Item> g_int2(new Item_int(0x77));
-std::unique_ptr<Item_func_uminus> g_uminus(new Item_func_uminus(g_int1.get()));
-std::unique_ptr<Item_func_isnull> g_isnull(new Item_func_isnull(g_int1.get()));
-std::unique_ptr<Item_func_add> g_add(new Item_func_add(g_uminus.get(),
-                                                       g_isnull.get()));
+std::unique_ptr<Item> g_uminus(new Item_func_uminus(g_int1.get()));
+std::unique_ptr<Item> g_isnull(new Item_func_isnull(g_int1.get()));
+std::unique_ptr<Item> g_add(new Item_func_add(g_uminus.get(), g_isnull.get()));
 
 TEST_SET(Item_int, g_int1);
 TEST_SET(Item_func_uminus, g_uminus);
