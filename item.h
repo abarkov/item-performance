@@ -112,67 +112,18 @@ public:
   Stat test_b_prm(ulonglong count);
   Stat test_b_get(ulonglong count);
   Stat test_b_new(ulonglong count);
-  MethodStat test_b(ulonglong count)
-  {
-    MethodStat st;
-#ifdef HAVE_NULL_VALUE
-    st.val_xxx=       test_b_old(count).time_spent;
-#endif
-    st.val_xxx_null=  test_b_prm(count).time_spent;
-    st.get_xxx=       test_b_get(count).time_spent;
-    st.to_xxx_null=   test_b_new(count).time_spent;
-    printf("\n");
-    return st;
-  }
 
   Stat test_d_prm(ulonglong count);
   Stat test_d_get(ulonglong count);
   Stat test_d_new(ulonglong count);
-  MethodStat test_d(ulonglong count)
-  {
-    MethodStat st;
-#ifdef HAVE_NULL_VALUE
-    st.val_xxx=      test_d_old(count).time_spent;
-#endif
-    st.val_xxx_null= test_d_prm(count).time_spent;
-    st.get_xxx=      test_d_get(count).time_spent;
-    st.to_xxx_null=  test_d_new(count).time_spent;
-    printf("\n");
-    return st;
-  }
 
   Stat test_int32_prm(ulonglong count);
   Stat test_int32_get(ulonglong count);
   Stat test_int32_new(ulonglong count);
-  MethodStat test_int32(ulonglong count)
-  {
-    MethodStat st;
-#ifdef HAVE_NULL_VALUE
-    st.val_xxx=      test_int32_old(count).time_spent;
-#endif
-    st.val_xxx_null= test_int32_prm(count).time_spent;
-    st.get_xxx=      test_int32_get(count).time_spent;
-    st.to_xxx_null=  test_int32_new(count).time_spent;
-    return st;
-  }
 
   Stat test_ll_prm(ulonglong count);
   Stat test_ll_get(ulonglong count);
   Stat test_ll_new(ulonglong count);
-  MethodStat test_ll(ulonglong count)
-  {
-    MethodStat st_int32;
-    //MethodStat st_int32= test_int32(count);
-    MethodStat st;
-#ifdef HAVE_NULL_VALUE
-    st.val_xxx=      test_ll_old(count).time_spent;
-#endif
-    st.val_xxx_null= test_ll_prm(count).time_spent;
-    st.get_xxx=      test_ll_get(count).time_spent;
-    st.to_xxx_null=  test_ll_new(count).time_spent;
-    printf("\n");
-    return st_int32 + st;
-  }
 };
 
 class Item_null: public Item

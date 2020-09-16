@@ -25,6 +25,58 @@ public:
     size_t mask_length= strlen(mask);
     return !strncmp(mask, name(), mask_length);
   }
+  MethodStat test_b(Item *item, ulonglong count) const
+  {
+    MethodStat st;
+#ifdef HAVE_NULL_VALUE
+    st.val_xxx=       item->test_b_old(count).time_spent;
+#endif
+    st.val_xxx_null=  item->test_b_prm(count).time_spent;
+    st.get_xxx=       item->test_b_get(count).time_spent;
+    st.to_xxx_null=   item->test_b_new(count).time_spent;
+    printf("\n");
+    return st;
+  }
+
+  MethodStat test_d(Item *item, ulonglong count) const
+  {
+    MethodStat st;
+#ifdef HAVE_NULL_VALUE
+    st.val_xxx=      item->test_d_old(count).time_spent;
+#endif
+    st.val_xxx_null= item->test_d_prm(count).time_spent;
+    st.get_xxx=      item->test_d_get(count).time_spent;
+    st.to_xxx_null=  item->test_d_new(count).time_spent;
+    printf("\n");
+    return st;
+  }
+
+  MethodStat test_int32(Item *item, ulonglong count) const
+  {
+    MethodStat st;
+#ifdef HAVE_NULL_VALUE
+    st.val_xxx=      item->test_int32_old(count).time_spent;
+#endif
+    st.val_xxx_null= item->test_int32_prm(count).time_spent;
+    st.get_xxx=      item->test_int32_get(count).time_spent;
+    st.to_xxx_null=  item->test_int32_new(count).time_spent;
+    return st;
+  }
+
+  MethodStat test_ll(Item *item, ulonglong count) const
+  {
+    MethodStat st_int32;
+    //MethodStat st_int32= test_int32(count);
+    MethodStat st;
+#ifdef HAVE_NULL_VALUE
+    st.val_xxx=      item->test_ll_old(count).time_spent;
+#endif
+    st.val_xxx_null= item->test_ll_prm(count).time_spent;
+    st.get_xxx=      item->test_ll_get(count).time_spent;
+    st.to_xxx_null=  item->test_ll_new(count).time_spent;
+    printf("\n");
+    return st_int32 + st;
+  }
 };
 
 
@@ -42,11 +94,11 @@ public:
     Item_func_coalesce coalesce_nl_nl(&nl,&nl); // COALESCE(NULL,NULL)
 
     MethodStat st;
-    st+= nl.test_b(count);
-    st+= nl.test_ll(count);
-    st+= nl.test_d(count);
-    st+= coalesce_nl.test_b(count);
-    st+= coalesce_nl_nl.test_b(count);
+    st+= test_b(&nl, count);
+    st+= test_ll(&nl, count);
+    st+= test_d(&nl, count);
+    st+= test_b(&coalesce_nl, count);
+    st+= test_b(&coalesce_nl_nl, count);
     return st;
   }
 };
@@ -77,7 +129,7 @@ public:
     };
     MethodStat st;
     for (uint i= 0; items_b[i]; i++)
-      st+= items_b[i]->test_b(count);
+      st+= test_b(items_b[i], count);
     return st;
   }
 };
@@ -94,7 +146,7 @@ public:
     Item *items[]= {&b0, &b1, NULL};
     MethodStat st;
     for (uint i= 0 ; items[i]; i++)
-      st+= items[i]->test_b(count);
+      st+= test_b(items[i], count);
     return st;
   }
 };
@@ -138,7 +190,7 @@ public:
     };
     MethodStat st;
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_b(count);
+      st+= test_b(items[i], count);
     return st;
   }
 };
@@ -158,7 +210,7 @@ public:
     Item *items[]= {&coalesce_b0, &coalesce_nl_b0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_b(count);
+      st+= test_b(items[i], count);
     return st;
   }
 };
@@ -178,7 +230,7 @@ public:
     Item *items[]= {&lv_b0, &lv_b0_b0_b0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_b(count);
+      st+= test_b(items[i], count);
     return st;
   }
 };
@@ -197,7 +249,7 @@ public:
     Item *items[]= {&ll0, &uminus_ll0, &uminus_uminus_ll0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_ll(count);
+      st+= test_ll(items[i], count);
     return st;
   }
 };
@@ -233,7 +285,7 @@ public:
     };
     MethodStat st;
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_ll(count);
+      st+= test_ll(items[i], count);
     return st;
   }
 };
@@ -263,7 +315,7 @@ public:
 
     MethodStat st;
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_ll(count);
+      st+= test_ll(items[i], count);
     return st;
   }
 };
@@ -283,7 +335,7 @@ public:
     Item *items[]= {&lv_b0, &lv_b0_b0_b0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_ll(count);
+      st+= test_ll(items[i], count);
     return st;
   }
 };
@@ -308,7 +360,7 @@ public:
       NULL
     };
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_d(count);
+      st+= test_d(items[i], count);
     return st;
   }
 };
@@ -343,7 +395,7 @@ public:
     };
     MethodStat st;
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_d(count);
+      st+= test_d(items[i], count);
     return st;
   }
 };
@@ -373,7 +425,7 @@ public:
       NULL
     };
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_d(count);
+      st+= test_d(items[i], count);
     return st;
   }
 };
@@ -393,7 +445,7 @@ public:
     Item *items[]= {&lv_b0, &lv_b0_b0_b0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
-      st+= items[i]->test_d(count);
+      st+= test_d(items[i], count);
     return st;
   }
 };
