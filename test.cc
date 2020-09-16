@@ -15,10 +15,14 @@ volatile int y= 2;
 
 void MethodStat::print(const char *method) const
 {
-  printf("val_%s        %f\n", method, val_xxx);
-  printf("val_%s_null   %f\n", method, val_xxx_null);
-  printf("get_%s        %f\n", method, get_xxx);
-  printf("to_%s_null    %f\n\n", method, to_xxx_null);
+  size_t length= strlen(method);
+  size_t space_count= length < 9 ? 9 - length : 0;
+  const char *sp="";
+  printf("val_%s        %-*s%f\n", method, space_count, "", val_xxx);
+  printf("val_%s_null   %-*s%f\n", method, space_count, "", val_xxx_null);
+  printf("get_%s        %-*s%f\n", method, space_count, "", get_xxx);
+  printf("to_%s_null    %-*s%f\n", method, space_count, "", to_xxx_null);
+  printf("\n");
 }
 
 
