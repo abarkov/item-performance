@@ -91,6 +91,48 @@ public:
     to_xxx_null+=  st.to_xxx_null;
     return *this;
   }
+  bool is_empty() const
+  {
+    return
+      val_xxx      == 0 &&
+      val_xxx_null == 0 &&
+      get_xxx      == 0 &&
+      to_xxx_null  == 0;
+  }
+  void print(const char *method) const;
+  void print_if(const char *method) const
+  {
+    if (!is_empty())
+      print(method);
+  }
+};
+
+
+class MethodStatByType
+{
+public:
+  MethodStat st_bool;
+  MethodStat st_int32;
+  MethodStat st_longlong;
+  MethodStat st_double;
+  MethodStatByType operator+=(const MethodStatByType &st)
+  {
+    st_bool+= st.st_bool;
+    st_int32+= st.st_int32;
+    st_longlong+= st.st_longlong;
+    st_double+= st.st_double;
+    return *this;
+  }
+  MethodStat total() const
+  {
+    MethodStat st;
+    st+= st_bool;
+    st+= st_int32;
+    st+= st_longlong;
+    st+= st_double;
+    return st;
+  }
+  void print() const;
 };
 
 

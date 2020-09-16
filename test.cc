@@ -13,13 +13,31 @@ volatile int x= 1;
 volatile int y= 2;
 
 
+void MethodStat::print(const char *method) const
+{
+  printf("val_%s        %f\n", method, val_xxx);
+  printf("val_%s_null   %f\n", method, val_xxx_null);
+  printf("get_%s        %f\n", method, get_xxx);
+  printf("to_%s_null    %f\n\n", method, to_xxx_null);
+}
+
+
+void MethodStatByType::print() const
+{
+  st_bool.print_if("bool");
+  st_int32.print_if("int32");
+  st_longlong.print_if("longlong");
+  st_double.print_if("double");
+}
+
+
 class Test
 {
 public:
   Test() { }
   virtual ~Test() { }
   virtual const char *name() const = 0;
-  virtual MethodStat run(ulonglong count) const = 0;
+  virtual MethodStatByType run(ulonglong count) const = 0;
   bool matches(const char *mask) const
   {
     size_t mask_length= strlen(mask);
@@ -46,7 +64,8 @@ public:
     print(item, st.to_xxx_null);
   }
 
-  MethodStat test_b(Item *item, ulonglong count) const
+
+  MethodStatByType test_b(Item *item, ulonglong count) const
   {
     StatAll st(
 #ifdef HAVE_NULL_VALUE
@@ -59,10 +78,12 @@ public:
       item->test_b_new(count));
     print(item, st);
     printf("\n");
-    return MethodStat(st);
+    MethodStatByType stt;
+    stt.st_bool+= MethodStat(st);
+    return stt;
   }
 
-  MethodStat test_d(Item *item, ulonglong count) const
+  MethodStatByType test_d(Item *item, ulonglong count) const
   {
     StatAll st(
 #ifdef HAVE_NULL_VALUE
@@ -75,10 +96,12 @@ public:
       item->test_d_new(count));
     print(item, st);
     printf("\n");
-    return MethodStat(st);
+    MethodStatByType stt;
+    stt.st_double+= MethodStat(st);
+    return stt;
   }
 
-  MethodStat test_int32(Item *item, ulonglong count) const
+  MethodStatByType test_int32(Item *item, ulonglong count) const
   {
     StatAll st(
 #ifdef HAVE_NULL_VALUE
@@ -90,13 +113,13 @@ public:
       item->test_int32_get(count),
       item->test_int32_new(count));
     print(item, st);
-    return MethodStat(st);
+    MethodStatByType stt;
+    stt.st_int32+= MethodStat(st);
+    return stt;
   }
 
-  MethodStat test_ll(Item *item, ulonglong count) const
+  MethodStatByType test_ll(Item *item, ulonglong count) const
   {
-    //MethodStat st_int32;
-    //MethodStat st_int32= test_int32(count);
     StatAll st(
 #ifdef HAVE_NULL_VALUE
       item->test_ll_old(count),
@@ -108,8 +131,9 @@ public:
       item->test_ll_new(count));
     print(item, st);
     printf("\n");
-    //return st_int32 + st;
-    return MethodStat(st);
+    MethodStatByType stt;
+    stt.st_longlong+= MethodStat(st);
+    return stt;
   }
 };
 
@@ -118,7 +142,7 @@ class Test_null_misc: public Test
 {
 public:
   const char *name() const override { return "null_misc"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null();                           // NULL
     Item *b0= new Item_bool(false);                      // FALSE
@@ -127,7 +151,7 @@ public:
     Item *coalesce_nl= new Item_func_coalesce(nl);       // COALESCE(NULL)
     Item *coalesce_nl_nl= new Item_func_coalesce(nl,nl); // COALESCE(NULL,NULL)
 
-    MethodStat st;
+    MethodStatByType st;
     st+= test_b(nl, count);
     st+= test_ll(nl, count);
     st+= test_d(nl, count);
@@ -149,7 +173,7 @@ class Test_bool_isnull: public Test
 {
 public:
   const char *name() const override { return "bool_isnull"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null;                       // NULL
     Item *b0= new Item_bool(false);                // FALSE
@@ -168,7 +192,7 @@ public:
       isnull_d0,
       NULL
     };
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0; items_b[i]; i++)
       st+= test_b(items_b[i], count);
     return st;
@@ -180,12 +204,12 @@ class Test_b: public Test
 {
 public:
   const char *name() const override { return "bool_misc"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *b0= new Item_bool(false);                // FALSE
     Item *b1= new Item_bool(true);                 // TRUE
     Item *items[]= {b0, b1, NULL};
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0 ; items[i]; i++)
       st+= test_b(items[i], count);
     return st;
@@ -197,7 +221,7 @@ class Test_b_or: public Test
 {
 public:
   const char *name() const override { return "bool_or"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_bool(false);
@@ -229,7 +253,7 @@ public:
       or_b0_nl__b1,
       NULL
     };
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0; items[i]; i++)
       st+= test_b(items[i], count);
     return st;
@@ -241,7 +265,7 @@ class Test_b_coalesce: public Test
 {
 public:
   const char *name() const override { return "bool_coalesce"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_bool(false);
@@ -249,7 +273,7 @@ public:
     Item *coalesce_nl_b0= new Item_func_coalesce(nl, b0); // COALESCE(NULL,FALSE)
  
     Item *items[]= {coalesce_b0, coalesce_nl_b0, NULL};
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0; items[i]; i++)
       st+= test_b(items[i], count);
     return st;
@@ -261,7 +285,7 @@ class Test_bool_last_value: public Test
 {
 public:
   const char *name() const override { return "bool_last_value"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_bool(false);
@@ -269,7 +293,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0; items[i]; i++)
       st+= test_b(items[i], count);
     return st;
@@ -281,14 +305,14 @@ class Test_ll: public Test
 {
 public:
   const char *name() const override { return "ll_misc"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *ll0= new Item_int(x);                                   // INT
     Item *uminus_ll0= new Item_func_uminus(ll0);                  // -INT
     Item *uminus_uminus_ll0= new Item_func_uminus(uminus_ll0);    // -(-INT)
  
     Item *items[]= {ll0, uminus_ll0, uminus_uminus_ll0, NULL};
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0; items[i]; i++)
       st+= test_ll(items[i], count);
     return st;
@@ -300,7 +324,7 @@ class Test_ll_plus: public Test
 {
 public:
   const char *name() const override { return "ll_plus"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null;                              // NULL
     Item *ll0= new Item_int(x);                               // INT
@@ -324,7 +348,7 @@ public:
       add_ll_ll_ll_ll_ll0,
       NULL
     };
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0; items[i]; i++)
       st+= test_ll(items[i], count);
     return st;
@@ -336,7 +360,7 @@ class Test_ll_coalesce: public Test
 {
 public:
   const char *name() const override { return "ll_coalesce"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null;
     Item *ll0= new Item_int(x);
@@ -354,7 +378,7 @@ public:
       NULL
     };
 
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0; items[i]; i++)
       st+= test_ll(items[i], count);
     return st;
@@ -366,7 +390,7 @@ class Test_ll_last_value: public Test
 {
 public:
   const char *name() const override { return "ll_last_value"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_int(x);
@@ -374,7 +398,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0; items[i]; i++)
       st+= test_ll(items[i], count);
     return st;
@@ -386,13 +410,13 @@ class Test_d: public Test
 {
 public:
   const char *name() const override { return "double_misc"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *d0= new Item_real(x);                                 // DBL
     Item *uminus_d0= new Item_func_uminus(d0);                 // -DBL
     Item *uminus_uminus_d0= new Item_func_uminus(uminus_d0);   // -(-DBL)
 
-    MethodStat st;
+    MethodStatByType st;
     Item *items[]=
     {
       d0,
@@ -411,7 +435,7 @@ class Test_d_plus: public Test
 {
 public:
   const char *name() const override { return "double_plus"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null();
     Item *d0= new Item_real(x);
@@ -434,7 +458,7 @@ public:
       add_d_d_d_d_d,
       NULL
     };
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0; items[i]; i++)
       st+= test_d(items[i], count);
     return st;
@@ -446,7 +470,7 @@ class Test_d_coalesce: public Test
 {
 public:
   const char *name() const override { return "double_coalesce"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null;
     Item *d0= new Item_real(x);
@@ -456,7 +480,7 @@ public:
     Item *coalesce_nl_nl_d0= new Item_func_coalesce(nl, nl, d0); // (NULL,NULL,DBL)
     Item *coalesce_nl_nl__d0= new Item_func_coalesce(coalesce_nl_nl, d0);//((NULL,NULL),DBL)
 
-    MethodStat st;
+    MethodStatByType st;
     Item *items[]=
     {
       coalesce_d0,
@@ -476,7 +500,7 @@ class Test_double_last_value: public Test
 {
 public:
   const char *name() const override { return "double_last_value"; }
-  MethodStat run(ulonglong count) const override
+  MethodStatByType run(ulonglong count) const override
   {
     Item *nl= new Item_null;
     Item *d0= new Item_real(x);
@@ -484,7 +508,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(d0, d0, d0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    MethodStat st;
+    MethodStatByType st;
     for (uint i= 0; items[i]; i++)
       st+= test_d(items[i], count);
     return st;
@@ -493,7 +517,7 @@ public:
 
 
 
-void run(const char *name, ulonglong count)
+MethodStatByType run(const char *name, ulonglong count)
 {
   static const Test_null_misc         test_null_misc;
   static const Test_b                 test_b;
@@ -529,17 +553,13 @@ void run(const char *name, ulonglong count)
     NULL
   };
 
-  MethodStat st;
+  MethodStatByType stt;
   for (uint i= 0; tests[i]; i++)
   {
     if (tests[i]->matches(name))
-      st+= tests[i]->run(count);
+      stt+= tests[i]->run(count);
   }
-  printf("Total:\n");
-  printf("val_xxx      %f\n", st.val_xxx);
-  printf("val_xxx_null %f\n", st.val_xxx_null);
-  printf("get_xxx      %f\n", st.get_xxx);
-  printf("to_xxx_null  %f\n", st.to_xxx_null);
+  return stt;
 }
 
 
@@ -548,15 +568,22 @@ int main(int argc, char **argv)
   const char *ecount= getenv("COUNT");
   ulonglong count= ecount ? (ulonglong) atoll(ecount) : default_count;
 
+  MethodStatByType stt;
   if (argc <= 1) // Run all tests
   {
-    run("", count);
+    stt+= run("", count);
   }
   else           // Run specified tests
   {
     for (int i= 1; i < argc; i++)
-      run(argv[i], count);
+      stt+= run(argv[i], count);
   }
+
+  printf("By type:\n");
+  stt.print();
+  MethodStat st= stt.total();
+  printf("Total:\n");
+  st.print("xxx");
 
   return 0;
 }
