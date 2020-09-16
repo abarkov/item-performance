@@ -120,19 +120,26 @@ public:
   const char *name() const override { return "null_misc"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;                               // NULL
-    Item_bool b0(false);                        // FALSE
-    Item_real d0(x);                            // 0e0
-    Item_int ll0(x);                            // 0
-    Item_func_coalesce coalesce_nl(&nl);        // COALESCE(NULL)
-    Item_func_coalesce coalesce_nl_nl(&nl,&nl); // COALESCE(NULL,NULL)
+    Item *nl= new Item_null();                           // NULL
+    Item *b0= new Item_bool(false);                      // FALSE
+    Item *d0= new Item_real(x);                          // 0e0
+    Item *ll0= new Item_int(x);                          // 0
+    Item *coalesce_nl= new Item_func_coalesce(nl);       // COALESCE(NULL)
+    Item *coalesce_nl_nl= new Item_func_coalesce(nl,nl); // COALESCE(NULL,NULL)
 
     MethodStat st;
-    st+= test_b(&nl, count);
-    st+= test_ll(&nl, count);
-    st+= test_d(&nl, count);
-    st+= test_b(&coalesce_nl, count);
-    st+= test_b(&coalesce_nl_nl, count);
+    st+= test_b(nl, count);
+    st+= test_ll(nl, count);
+    st+= test_d(nl, count);
+    st+= test_b(coalesce_nl, count);
+    st+= test_b(coalesce_nl_nl, count);
+
+    delete nl;
+    delete b0;
+    delete d0;
+    delete ll0;
+    delete coalesce_nl;
+    delete coalesce_nl_nl;
     return st;
   }
 };
@@ -144,21 +151,21 @@ public:
   const char *name() const override { return "bool_isnull"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;                               // NULL
-    Item_bool b0(false);                        // FALSE
-    Item_real d0(x);                            // 0e0
-    Item_int ll0(x);                            // 0
-    Item_func_isnull isnull_nl(&nl);            // NULL IS NULL
-    Item_func_isnull isnull_b0(&b0);            // FALSE IS NULL
-    Item_func_isnull isnull_ll0(&ll0);          // 0 IS NULL
-    Item_func_isnull isnull_d0(&d0);            // 0e0 IS NULL
+    Item *nl= new Item_null;                       // NULL
+    Item *b0= new Item_bool(false);                // FALSE
+    Item *d0= new Item_real(x);                    // 0e0
+    Item *ll0= new Item_int(x);                    // 0
+    Item *isnull_nl= new Item_func_isnull(nl);     // NULL IS NULL
+    Item *isnull_b0= new Item_func_isnull(b0);     // FALSE IS NULL
+    Item *isnull_ll0= new Item_func_isnull(ll0);   // 0 IS NULL
+    Item *isnull_d0= new Item_func_isnull(d0);     // 0e0 IS NULL
 
     Item *items_b[]=
     {
-      &isnull_nl,
-      &isnull_b0,
-      &isnull_ll0,
-      &isnull_d0,
+      isnull_nl,
+      isnull_b0,
+      isnull_ll0,
+      isnull_d0,
       NULL
     };
     MethodStat st;
@@ -175,9 +182,9 @@ public:
   const char *name() const override { return "bool_misc"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_bool b0(false);                // FALSE
-    Item_bool b1(true);                 // TRUE
-    Item *items[]= {&b0, &b1, NULL};
+    Item *b0= new Item_bool(false);                // FALSE
+    Item *b1= new Item_bool(true);                 // TRUE
+    Item *items[]= {b0, b1, NULL};
     MethodStat st;
     for (uint i= 0 ; items[i]; i++)
       st+= test_b(items[i], count);
@@ -192,34 +199,34 @@ public:
   const char *name() const override { return "bool_or"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;
-    Item_bool b0(false);
-    Item_bool b1(true);
+    Item *nl= new Item_null;
+    Item *b0= new Item_bool(false);
+    Item *b1= new Item_bool(true);
 
-    Item_cond_or or_nl_nl(&nl, &nl);        // NULL OR NULL
-    Item_cond_or or_nl_b0(&nl, &b0);        // NULL OR FALSE
-    Item_cond_or or_nl_b1(&nl, &b1);        // NULL OR TRUE
-    Item_cond_or or_b0_nl(&b0, &nl);        // FALSE OR NULL
-    Item_cond_or or_b0_b0(&b0, &b0);        // FALSE OR FALSE
-    Item_cond_or or_b0_b1(&b0, &b1);        // FALSE OR TRUE
-    Item_cond_or or_b1_b0(&b1, &b0);        // TRUE OR FALSE
-    Item_cond_or or_b1_b1(&b1, &b1);        // TRUE OR TRUE
+    Item *or_nl_nl= new Item_cond_or(nl, nl);        // NULL OR NULL
+    Item *or_nl_b0= new Item_cond_or(nl, b0);        // NULL OR FALSE
+    Item *or_nl_b1= new Item_cond_or(nl, b1);        // NULL OR TRUE
+    Item *or_b0_nl= new Item_cond_or(b0, nl);        // FALSE OR NULL
+    Item *or_b0_b0= new Item_cond_or(b0, b0);        // FALSE OR FALSE
+    Item *or_b0_b1= new Item_cond_or(b0, b1);        // FALSE OR TRUE
+    Item *or_b1_b0= new Item_cond_or(b1, b0);        // TRUE OR FALSE
+    Item *or_b1_b1= new Item_cond_or(b1, b1);        // TRUE OR TRUE
 
-    Item_cond_or or_b0_nl_b1(&b0, &nl, &b1);   // FALSE OR NULL OR TRUE
-    Item_cond_or or_b0_nl__b1(&or_b0_nl, &b1);  // (FALSE OR NULL) OR TRUE
+    Item *or_b0_nl_b1= new Item_cond_or(b0, nl, b1);   // FALSE OR NULL OR TRUE
+    Item *or_b0_nl__b1= new Item_cond_or(or_b0_nl, b1);  // (FALSE OR NULL) OR TRUE
 
     Item *items[]=
     {
-      &or_nl_nl,
-      &or_nl_b0,
-      &or_nl_b1,
-      &or_b0_nl,
-      &or_b0_b0,
-      &or_b0_b1,
-      &or_b1_b0,
-      &or_b1_b1,
-      &or_b0_nl_b1,
-      &or_b0_nl__b1,
+      or_nl_nl,
+      or_nl_b0,
+      or_nl_b1,
+      or_b0_nl,
+      or_b0_b0,
+      or_b0_b1,
+      or_b1_b0,
+      or_b1_b1,
+      or_b0_nl_b1,
+      or_b0_nl__b1,
       NULL
     };
     MethodStat st;
@@ -236,12 +243,12 @@ public:
   const char *name() const override { return "bool_coalesce"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;
-    Item_bool b0(false);
-    Item_func_coalesce coalesce_b0(&b0);         // COALESCE(FALSE)
-    Item_func_coalesce coalesce_nl_b0(&nl, &b0); // COALESCE(NULL,FALSE)
+    Item *nl= new Item_null;
+    Item *b0= new Item_bool(false);
+    Item *coalesce_b0= new Item_func_coalesce(b0);        // COALESCE(FALSE)
+    Item *coalesce_nl_b0= new Item_func_coalesce(nl, b0); // COALESCE(NULL,FALSE)
  
-    Item *items[]= {&coalesce_b0, &coalesce_nl_b0, NULL};
+    Item *items[]= {coalesce_b0, coalesce_nl_b0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
       st+= test_b(items[i], count);
@@ -256,12 +263,12 @@ public:
   const char *name() const override { return "bool_last_value"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;
-    Item_bool b0(false);
-    Item_func_last_value lv_b0(&b0);
-    Item_func_last_value lv_b0_b0_b0(&b0, &b0, &b0);
+    Item *nl= new Item_null;
+    Item *b0= new Item_bool(false);
+    Item *lv_b0= new Item_func_last_value(b0);
+    Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
  
-    Item *items[]= {&lv_b0, &lv_b0_b0_b0, NULL};
+    Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
       st+= test_b(items[i], count);
@@ -276,11 +283,11 @@ public:
   const char *name() const override { return "ll_misc"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_int ll0(x);                                    // INT
-    Item_func_uminus uminus_ll0(&ll0);                  // -INT
-    Item_func_uminus uminus_uminus_ll0(&uminus_ll0);    // -(-INT)
+    Item *ll0= new Item_int(x);                                   // INT
+    Item *uminus_ll0= new Item_func_uminus(ll0);                  // -INT
+    Item *uminus_uminus_ll0= new Item_func_uminus(uminus_ll0);    // -(-INT)
  
-    Item *items[]= {&ll0, &uminus_ll0, &uminus_uminus_ll0, NULL};
+    Item *items[]= {ll0, uminus_ll0, uminus_uminus_ll0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
       st+= test_ll(items[i], count);
@@ -295,26 +302,26 @@ public:
   const char *name() const override { return "ll_plus"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;                                         // NULL
-    Item_int ll0(x);                                      // INT
-    Item_int ll1(y);                                      // INT
+    Item *nl= new Item_null;                              // NULL
+    Item *ll0= new Item_int(x);                               // INT
+    Item *ll1= new Item_int(y);                               // INT
 
-    Item_func_add add_ll0_nl(&ll0, &nl);             // (INT + NULL)
-    Item_func_add add_nl_ll0(&nl, &ll0);             // (NULL + INT)
+    Item *add_ll0_nl= new Item_func_add(ll0, nl);             // (INT + NULL)
+    Item *add_nl_ll0= new Item_func_add(nl, ll0);             // (NULL + INT)
 
-    Item_func_add add_ll_ll(&ll0, &ll1);                  // INT + INT
-    Item_func_add add_ll_ll_ll0(&add_ll_ll, &ll0);  // (INT + INT) + INT
-    Item_func_add add_ll_ll_ll1(&add_ll_ll, &ll1);         // (INT+INT)+INT
-    Item_func_add add_ll_ll_ll_ll(&add_ll_ll_ll0, &ll1);   //
-    Item_func_add add_ll_ll_ll_ll_ll0(&add_ll_ll_ll_ll, &ll0);// (INT + ...+ INT)
+    Item *add_ll_ll= new Item_func_add(ll0, ll1);             // INT + INT
+    Item *add_ll_ll_ll0= new Item_func_add(add_ll_ll, ll0);   // (INT + INT) + INT
+    Item *add_ll_ll_ll1= new Item_func_add(add_ll_ll, ll1);   // (INT+INT)+INT
+    Item *add_ll_ll_ll_ll= new Item_func_add(add_ll_ll_ll0, ll1);   //
+    Item *add_ll_ll_ll_ll_ll0= new Item_func_add(add_ll_ll_ll_ll, ll0);// (INT + ...+ INT)
 
     Item *items[]=
     {
-      &add_ll0_nl,
-      &add_nl_ll0,
-      &add_ll_ll,
-      &add_ll_ll_ll0,
-      &add_ll_ll_ll_ll_ll0,
+      add_ll0_nl,
+      add_nl_ll0,
+      add_ll_ll,
+      add_ll_ll_ll0,
+      add_ll_ll_ll_ll_ll0,
       NULL
     };
     MethodStat st;
@@ -331,19 +338,19 @@ public:
   const char *name() const override { return "ll_coalesce"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;
-    Item_int ll0(x);
-    Item_int ll1(y);
-    Item_func_coalesce coalesce_ll(&ll0);           // COALESCE(INT)
-    Item_func_coalesce coalesce_nl_nl(&nl, &nl);    // COALESCE(NULL,NULL)
-    Item_func_coalesce coalesce_nl_ll0(&nl,&ll0);   // COALESCE(NULL,INT)
-    Item_func_coalesce coalesce_nl_nl__ll0(&coalesce_nl_nl, &ll0);//((NULL,NULL),INT)
+    Item *nl= new Item_null;
+    Item *ll0= new Item_int(x);
+    Item *ll1= new Item_int(y);
+    Item *coalesce_ll= new Item_func_coalesce(ll0);          // COALESCE(INT)
+    Item *coalesce_nl_nl= new Item_func_coalesce(nl, nl);    // COALESCE(NULL,NULL)
+    Item *coalesce_nl_ll0= new Item_func_coalesce(nl,ll0);   // COALESCE(NULL,INT)
+    Item *coalesce_nl_nl__ll0= new Item_func_coalesce(coalesce_nl_nl, ll0);//((NULL,NULL),INT)
 
     Item *items[]=
     {
-      &coalesce_ll,
-      &coalesce_nl_ll0,
-      &coalesce_nl_nl__ll0,
+      coalesce_ll,
+      coalesce_nl_ll0,
+      coalesce_nl_nl__ll0,
       NULL
     };
 
@@ -361,12 +368,12 @@ public:
   const char *name() const override { return "ll_last_value"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;
-    Item_int b0(x);
-    Item_func_last_value lv_b0(&b0);
-    Item_func_last_value lv_b0_b0_b0(&b0, &b0, &b0);
+    Item *nl= new Item_null;
+    Item *b0= new Item_int(x);
+    Item *lv_b0= new Item_func_last_value(b0);
+    Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
  
-    Item *items[]= {&lv_b0, &lv_b0_b0_b0, NULL};
+    Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
       st+= test_ll(items[i], count);
@@ -381,16 +388,16 @@ public:
   const char *name() const override { return "double_misc"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_real d0(x);                                 // DBL
-    Item_func_uminus uminus_d0(&d0);                 // -DBL
-    Item_func_uminus uminus_uminus_d0(&uminus_d0);   // -(-DBL)
+    Item *d0= new Item_real(x);                                 // DBL
+    Item *uminus_d0= new Item_func_uminus(d0);                 // -DBL
+    Item *uminus_uminus_d0= new Item_func_uminus(uminus_d0);   // -(-DBL)
 
     MethodStat st;
     Item *items[]=
     {
-      &d0,
-      &uminus_d0,
-      &uminus_uminus_d0,
+      d0,
+      uminus_d0,
+      uminus_uminus_d0,
       NULL
     };
     for (uint i= 0; items[i]; i++)
@@ -406,25 +413,25 @@ public:
   const char *name() const override { return "double_plus"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;
-    Item_real d0(x);
-    Item_real d1(y);
+    Item *nl= new Item_null();
+    Item *d0= new Item_real(x);
+    Item *d1= new Item_real(y);
 
-    Item_func_add add_nl_d0(&nl, &d0);                // (NULL+ DBL)
-    Item_func_add add_d0_nl(&d0, &nl);                // (DBL + NULL)
-    Item_func_add add_d_d(&d0, &d1);                  // (DBL + DBL)
-    Item_func_add add_d_d_d0(&add_d_d, &d0);          // (DBL + DBL) + DBL
-    Item_func_add add_d_d_d1(&add_d_d, &d1);          // (DBL + DBL) + DBL
-    Item_func_add add_d_d_d_d(&add_d_d_d1, &d1);      // (DBL +...+DBL)
-    Item_func_add add_d_d_d_d_d(&add_d_d_d_d, &d0);   // (DBL +...+DBL)
+    Item *add_nl_d0= new Item_func_add(nl, d0);                // (NULL+ DBL)
+    Item *add_d0_nl= new Item_func_add(d0, nl);                // (DBL + NULL)
+    Item *add_d_d= new Item_func_add(d0, d1);                  // (DBL + DBL)
+    Item *add_d_d_d0= new Item_func_add(add_d_d, d0);          // (DBL + DBL) + DBL
+    Item *add_d_d_d1= new Item_func_add(add_d_d, d1);          // (DBL + DBL) + DBL
+    Item *add_d_d_d_d= new Item_func_add(add_d_d_d1, d1);      // (DBL +...+DBL)
+    Item *add_d_d_d_d_d= new Item_func_add(add_d_d_d_d, d0);   // (DBL +...+DBL)
 
     Item *items[]=
     {
-      &add_nl_d0,
-      &add_d0_nl,
-      &add_d_d,
-      &add_d_d_d0,
-      &add_d_d_d_d_d,
+      add_nl_d0,
+      add_d0_nl,
+      add_d_d,
+      add_d_d_d0,
+      add_d_d_d_d_d,
       NULL
     };
     MethodStat st;
@@ -441,21 +448,21 @@ public:
   const char *name() const override { return "double_coalesce"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;
-    Item_real d0(x);
-    Item_func_coalesce coalesce_d0(&d0);         // COALESCE(DBL)
-    Item_func_coalesce coalesce_nl_d0(&nl, &d0); // COALESCE(NULL,DBL)
-    Item_func_coalesce coalesce_nl_nl(&nl, &nl); // COALESCE(NULL,NULL)
-    Item_func_coalesce coalesce_nl_nl_d0(&nl, &nl, &d0); // (NULL,NULL,DBL)
-    Item_func_coalesce coalesce_nl_nl__d0(&coalesce_nl_nl, &d0);//((NULL,NULL),DBL)
+    Item *nl= new Item_null;
+    Item *d0= new Item_real(x);
+    Item *coalesce_d0= new Item_func_coalesce(d0);        // COALESCE(DBL)
+    Item *coalesce_nl_d0= new Item_func_coalesce(nl, d0); // COALESCE(NULL,DBL)
+    Item *coalesce_nl_nl= new Item_func_coalesce(nl, nl); // COALESCE(NULL,NULL)
+    Item *coalesce_nl_nl_d0= new Item_func_coalesce(nl, nl, d0); // (NULL,NULL,DBL)
+    Item *coalesce_nl_nl__d0= new Item_func_coalesce(coalesce_nl_nl, d0);//((NULL,NULL),DBL)
 
     MethodStat st;
     Item *items[]=
     {
-      &coalesce_d0,
-      &coalesce_nl_d0,
-      &coalesce_nl_nl_d0,
-      &coalesce_nl_nl__d0,
+      coalesce_d0,
+      coalesce_nl_d0,
+      coalesce_nl_nl_d0,
+      coalesce_nl_nl__d0,
       NULL
     };
     for (uint i= 0; items[i]; i++)
@@ -471,12 +478,12 @@ public:
   const char *name() const override { return "double_last_value"; }
   MethodStat run(ulonglong count) const override
   {
-    Item_null nl;
-    Item_real b0(x);
-    Item_func_last_value lv_b0(&b0);
-    Item_func_last_value lv_b0_b0_b0(&b0, &b0, &b0);
+    Item *nl= new Item_null;
+    Item *d0= new Item_real(x);
+    Item *lv_b0= new Item_func_last_value(d0);
+    Item *lv_b0_b0_b0= new Item_func_last_value(d0, d0, d0);
  
-    Item *items[]= {&lv_b0, &lv_b0_b0_b0, NULL};
+    Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
     MethodStat st;
     for (uint i= 0; items[i]; i++)
       st+= test_d(items[i], count);
