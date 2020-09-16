@@ -63,3 +63,24 @@ every listed above data type has the following three new methods
  virtual double val_real_null(bool *null_value_arg); // Pass NULL flag by ptr
  virtual bool get_double(double *to);                // Return NULL flag
  virtual Double_null to_double_null();               // Return a struct
+
+
+How to read test results:
+========================
+
+The following columns are printed:
+
+1) compiler (e.g. "gcc" or "clang")
+2) the value method name used
+3) time spent (the smaller - the better)
+4) SQL expression tested
+5) Sum of all not null results (to make sure that different value methods
+   return the same sum).
+
+Method names printed in test results, using double related methods
+as an example:
+
+val_real       - double val_xxx() - with Item::null_value - current aproach
+val_real_null  - double val_real_null(bool *null_value)"  - NULL flag as outvar
+get_double     - bool get_double(double *val)             - Return NULL flag
+to_double_null - Double_null to_double_null()             - Return a struct
