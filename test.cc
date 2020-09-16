@@ -124,6 +124,11 @@ public:
 
   MethodStatByType test_ll(Item *item, ulonglong count) const
   {
+    MethodStatByType stt;
+    const char *eint32= getenv("INT32");
+    if (eint32 && atoi(eint32))
+      stt+= test_int32(item, count);
+
     StatAll st(
 #ifdef HAVE_NULL_VALUE
       item->test_ll_old(count),
@@ -134,9 +139,9 @@ public:
       item->test_ll_get(count),
       item->test_ll_new(count));
     print(item, st);
-    printf("\n");
-    MethodStatByType stt;
     stt.st_longlong+= MethodStat(st);
+    printf("\n");
+
     return stt;
   }
 };
