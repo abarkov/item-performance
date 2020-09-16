@@ -29,6 +29,21 @@ enum enum_field_types
 };
 
 
+class Stat
+{
+public:
+  longlong sum_ll;
+  double sum_d;
+  double time_spent;
+  const char *method;
+  bool use_sum_d;
+  Stat()
+   :sum_ll(0), sum_d(0), time_spent(0), method(""), use_sum_d(false)
+  { }
+  void print(class Item *item);
+};
+
+
 class MethodStat
 {
 public:
@@ -68,6 +83,10 @@ public:
   virtual double val_real()= 0;
   virtual longlong val_int()= 0;
   virtual int32 val_int32()= 0;
+  Stat test_b_old(ulonglong count);
+  Stat test_d_old(ulonglong count);
+  Stat test_int32_old(ulonglong count);
+  Stat test_ll_old(ulonglong count);
 #endif
   virtual ~Item() { }
 
@@ -90,63 +109,67 @@ public:
   virtual Int32_null to_int32_null()= 0;
   virtual Double_null to_double_null()= 0;
 
-  double test_b_old(ulonglong count);
-  double test_b_prm(ulonglong count);
-  double test_b_get(ulonglong count);
-  double test_b_new(ulonglong count);
+  Stat test_b_prm(ulonglong count);
+  Stat test_b_get(ulonglong count);
+  Stat test_b_new(ulonglong count);
   MethodStat test_b(ulonglong count)
   {
     MethodStat st;
-    st.val_xxx=       test_b_old(count);
-    st.val_xxx_null=  test_b_prm(count);
-    st.get_xxx=       test_b_get(count);
-    st.to_xxx_null=   test_b_new(count);
+#ifdef HAVE_NULL_VALUE
+    st.val_xxx=       test_b_old(count).time_spent;
+#endif
+    st.val_xxx_null=  test_b_prm(count).time_spent;
+    st.get_xxx=       test_b_get(count).time_spent;
+    st.to_xxx_null=   test_b_new(count).time_spent;
     printf("\n");
     return st;
   }
 
-  double test_d_old(ulonglong count);
-  double test_d_prm(ulonglong count);
-  double test_d_get(ulonglong count);
-  double test_d_new(ulonglong count);
+  Stat test_d_prm(ulonglong count);
+  Stat test_d_get(ulonglong count);
+  Stat test_d_new(ulonglong count);
   MethodStat test_d(ulonglong count)
   {
     MethodStat st;
-    st.val_xxx=      test_d_old(count);
-    st.val_xxx_null= test_d_prm(count);
-    st.get_xxx=      test_d_get(count);
-    st.to_xxx_null=  test_d_new(count);
+#ifdef HAVE_NULL_VALUE
+    st.val_xxx=      test_d_old(count).time_spent;
+#endif
+    st.val_xxx_null= test_d_prm(count).time_spent;
+    st.get_xxx=      test_d_get(count).time_spent;
+    st.to_xxx_null=  test_d_new(count).time_spent;
     printf("\n");
     return st;
   }
 
-  double test_int32_old(ulonglong count);
-  double test_int32_prm(ulonglong count);
-  double test_int32_get(ulonglong count);
-  double test_int32_new(ulonglong count);
+  Stat test_int32_prm(ulonglong count);
+  Stat test_int32_get(ulonglong count);
+  Stat test_int32_new(ulonglong count);
   MethodStat test_int32(ulonglong count)
   {
     MethodStat st;
-    st.val_xxx=      test_int32_old(count);
-    st.val_xxx_null= test_int32_prm(count);
-    st.get_xxx=      test_int32_get(count);
-    st.to_xxx_null=  test_int32_new(count);
+#ifdef HAVE_NULL_VALUE
+    st.val_xxx=      test_int32_old(count).time_spent;
+#endif
+    st.val_xxx_null= test_int32_prm(count).time_spent;
+    st.get_xxx=      test_int32_get(count).time_spent;
+    st.to_xxx_null=  test_int32_new(count).time_spent;
     return st;
   }
 
-  double test_ll_old(ulonglong count);
-  double test_ll_prm(ulonglong count);
-  double test_ll_get(ulonglong count);
-  double test_ll_new(ulonglong count);
+  Stat test_ll_prm(ulonglong count);
+  Stat test_ll_get(ulonglong count);
+  Stat test_ll_new(ulonglong count);
   MethodStat test_ll(ulonglong count)
   {
     MethodStat st_int32;
     //MethodStat st_int32= test_int32(count);
     MethodStat st;
-    st.val_xxx=      test_ll_old(count);
-    st.val_xxx_null= test_ll_prm(count);
-    st.get_xxx=      test_ll_get(count);
-    st.to_xxx_null=  test_ll_new(count);
+#ifdef HAVE_NULL_VALUE
+    st.val_xxx=      test_ll_old(count).time_spent;
+#endif
+    st.val_xxx_null= test_ll_prm(count).time_spent;
+    st.get_xxx=      test_ll_get(count).time_spent;
+    st.to_xxx_null=  test_ll_new(count).time_spent;
     printf("\n");
     return st_int32 + st;
   }
