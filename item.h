@@ -40,7 +40,22 @@ public:
   Stat()
    :sum_ll(0), sum_d(0), time_spent(0), method(""), use_sum_d(false)
   { }
-  void print(class Item *item);
+};
+
+
+class StatAll
+{
+public:
+  Stat val_xxx;
+  Stat val_xxx_null;
+  Stat get_xxx;
+  Stat to_xxx_null;
+  StatAll(const Stat &a, const Stat &b, const Stat &c, const Stat &d)
+   :val_xxx(a),
+    val_xxx_null(b),
+    get_xxx(c),
+    to_xxx_null(d)
+  { }
 };
 
 
@@ -51,6 +66,12 @@ public:
   double val_xxx_null;
   double get_xxx;
   double to_xxx_null;
+  MethodStat(const StatAll &st)
+   :val_xxx(st.val_xxx.time_spent),
+    val_xxx_null(st.val_xxx_null.time_spent),
+    get_xxx(st.get_xxx.time_spent),
+    to_xxx_null(st.to_xxx_null.time_spent)
+  { }
   MethodStat(double a, double b, double c, double d)
    :val_xxx(a), val_xxx_null(b), get_xxx(c), to_xxx_null(d)
   { }

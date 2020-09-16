@@ -8,17 +8,6 @@
 #include "item_func.h"
 
 
-void Stat::print(Item *item)
-{
-  string s;
-  item->print(&s);
-  if (use_sum_d)
-    printf("%s %-16s %f %s %.2f\n", COMPILER, method, time_spent, s.c_str(), sum_d);
-  else
-    printf("%s %-16s %f %s %lld\n", COMPILER, method, time_spent, s.c_str(), sum_ll);
-}
-
-
 #ifdef HAVE_NULL_VALUE
 Stat Item::test_b_old(ulonglong count)
 {
@@ -32,7 +21,6 @@ Stat Item::test_b_old(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "val_bool";
-  st.print(this);
   return st;
 }
 #endif
@@ -52,7 +40,6 @@ Stat Item::test_d_old(ulonglong count)
   st.time_spent= Timer().diff(t0);
   st.method= "val_real";
   st.use_sum_d= true;
-  st.print(this);
   return st;
 }
 #endif
@@ -71,7 +58,6 @@ Stat Item::test_ll_old(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "val_int";
-  st.print(this);
   return st;
 }
 #endif
@@ -90,7 +76,6 @@ Stat Item::test_int32_old(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "val_int32";
-  st.print(this);
   return st;
 }
 #endif
@@ -110,7 +95,6 @@ Stat Item::test_b_prm(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "val_bool_null";
-  st.print(this);
   return st;
 }
 
@@ -127,7 +111,6 @@ Stat Item::test_b_get(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "get_bool";
-  st.print(this);
   return st;
 }
 
@@ -147,7 +130,6 @@ Stat Item::test_d_prm(ulonglong count)
   st.time_spent= Timer().diff(t0);
   st.method= "val_real_null";
   st.use_sum_d= true;
-  st.print(this);
   return st;
 }
 
@@ -165,7 +147,6 @@ Stat Item::test_d_get(ulonglong count)
   st.time_spent= Timer().diff(t0);
   st.method= "get_double";
   st.use_sum_d= true;
-  st.print(this);
   return st;
 }
 
@@ -183,7 +164,6 @@ Stat Item::test_ll_prm(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "val_int_null";
-  st.print(this);
   return st;
 }
 
@@ -201,7 +181,6 @@ Stat Item::test_int32_prm(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "val_int32_null";
-  st.print(this);
   return st;
 }
 
@@ -218,7 +197,6 @@ Stat Item::test_ll_get(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "get_longlong";
-  st.print(this);
   return st;
 }
 
@@ -235,7 +213,6 @@ Stat Item::test_int32_get(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "get_int32";
-  st.print(this);
   return st;
 }
 
@@ -252,7 +229,6 @@ Stat Item::test_b_new(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "to_bool_null";
-  st.print(this);
   return st;
 }
 
@@ -270,7 +246,6 @@ Stat Item::test_d_new(ulonglong count)
   st.time_spent= Timer().diff(t0);
   st.method= "to_double_null";
   st.use_sum_d= true;
-  st.print(this);
   return st;
 }
 
@@ -287,7 +262,6 @@ Stat Item::test_ll_new(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "to_longlong_null";
-  st.print(this);
   return st;
 }
 
@@ -304,6 +278,5 @@ Stat Item::test_int32_new(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "to_int32_null";
-  st.print(this);
   return st;
 }

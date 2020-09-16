@@ -25,57 +25,91 @@ public:
     size_t mask_length= strlen(mask);
     return !strncmp(mask, name(), mask_length);
   }
+  void print(Item *item, const Stat &st) const
+  {
+    string s;
+    item->print(&s);
+    if (st.use_sum_d)
+      printf("%s %-16s %f %s %.2f\n",
+             COMPILER, st.method, st.time_spent, s.c_str(), st.sum_d);
+    else
+      printf("%s %-16s %f %s %lld\n",
+             COMPILER, st.method, st.time_spent, s.c_str(), st.sum_ll);
+  }
+  void print(Item *item, const StatAll &st) const
+  {
+#ifdef HAVE_NULL_VALUE
+    print(item, st.val_xxx);
+#endif
+    print(item, st.val_xxx_null);
+    print(item, st.get_xxx);
+    print(item, st.to_xxx_null);
+  }
+
   MethodStat test_b(Item *item, ulonglong count) const
   {
-    MethodStat st;
+    StatAll st(
 #ifdef HAVE_NULL_VALUE
-    st.val_xxx=       item->test_b_old(count).time_spent;
+      item->test_b_old(count),
+#else
+      Stat(),
 #endif
-    st.val_xxx_null=  item->test_b_prm(count).time_spent;
-    st.get_xxx=       item->test_b_get(count).time_spent;
-    st.to_xxx_null=   item->test_b_new(count).time_spent;
+      item->test_b_prm(count),
+      item->test_b_get(count),
+      item->test_b_new(count));
+    print(item, st);
     printf("\n");
-    return st;
+    return MethodStat(st);
   }
 
   MethodStat test_d(Item *item, ulonglong count) const
   {
-    MethodStat st;
+    StatAll st(
 #ifdef HAVE_NULL_VALUE
-    st.val_xxx=      item->test_d_old(count).time_spent;
+      item->test_d_old(count),
+#else
+      Stat(),
 #endif
-    st.val_xxx_null= item->test_d_prm(count).time_spent;
-    st.get_xxx=      item->test_d_get(count).time_spent;
-    st.to_xxx_null=  item->test_d_new(count).time_spent;
+      item->test_d_prm(count),
+      item->test_d_get(count),
+      item->test_d_new(count));
+    print(item, st);
     printf("\n");
-    return st;
+    return MethodStat(st);
   }
 
   MethodStat test_int32(Item *item, ulonglong count) const
   {
-    MethodStat st;
+    StatAll st(
 #ifdef HAVE_NULL_VALUE
-    st.val_xxx=      item->test_int32_old(count).time_spent;
+      item->test_int32_old(count),
+#else
+      Stat(),
 #endif
-    st.val_xxx_null= item->test_int32_prm(count).time_spent;
-    st.get_xxx=      item->test_int32_get(count).time_spent;
-    st.to_xxx_null=  item->test_int32_new(count).time_spent;
-    return st;
+      item->test_int32_prm(count),
+      item->test_int32_get(count),
+      item->test_int32_new(count));
+    print(item, st);
+    return MethodStat(st);
   }
 
   MethodStat test_ll(Item *item, ulonglong count) const
   {
-    MethodStat st_int32;
+    //MethodStat st_int32;
     //MethodStat st_int32= test_int32(count);
-    MethodStat st;
+    StatAll st(
 #ifdef HAVE_NULL_VALUE
-    st.val_xxx=      item->test_ll_old(count).time_spent;
+      item->test_ll_old(count),
+#else
+      Stat(),
 #endif
-    st.val_xxx_null= item->test_ll_prm(count).time_spent;
-    st.get_xxx=      item->test_ll_get(count).time_spent;
-    st.to_xxx_null=  item->test_ll_new(count).time_spent;
+      item->test_ll_prm(count),
+      item->test_ll_get(count),
+      item->test_ll_new(count));
+    print(item, st);
     printf("\n");
-    return st_int32 + st;
+    //return st_int32 + st;
+    return MethodStat(st);
   }
 };
 
