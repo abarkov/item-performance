@@ -739,137 +739,149 @@ int32 Item_func_coalesce::val_int32()
 
 bool Item_func_coalesce::val_bool_null(bool *null_value_arg)
 {
-  for (uint i=0 ; i < arg_count ; i++)
+  uint last= arg_count - 1;
+  for (uint i=0 ; i < last ; i++)
   {
     bool res= args[i]->val_bool_null(null_value_arg);
     if (!*null_value_arg)
       return res;
   }
-  return 0;
+  return args[last]->val_bool_null(null_value_arg);
 }
 
 
 longlong Item_func_coalesce::val_int_null(bool *null_value_arg)
 {
-  for (uint i=0 ; i < arg_count ; i++)
+  uint last= arg_count - 1;
+  for (uint i=0 ; i < last ; i++)
   {
     longlong res= args[i]->val_int_null(null_value_arg);
     if (!*null_value_arg)
       return res;
   }
-  return 0;
+  return args[last]->val_int_null(null_value_arg);
 }
 
 
 int32 Item_func_coalesce::val_int32_null(bool *null_value_arg)
 {
-  for (uint i=0 ; i < arg_count ; i++)
+ uint last= arg_count - 1;
+   for (uint i=0 ; i < last ; i++)
   {
     int32 res= args[i]->val_int32_null(null_value_arg);
     if (!*null_value_arg)
       return res;
   }
-  return 0;
+  return args[last]->val_int32_null(null_value_arg);
 }
 
 
 double Item_func_coalesce::val_real_null(bool *null_value_arg)
 {
-  for (uint i=0 ; i < arg_count ; i++)
+  uint last= arg_count - 1;
+  for (uint i=0 ; i < last ; i++)
   {
     double res= args[i]->val_real_null(null_value_arg);
     if (!*null_value_arg)
       return res;
   }
-  return 0;
+  return args[last]->val_real_null(null_value_arg);
 }
 
 bool Item_func_coalesce::get_bool(bool *to)
 {
-  for (uint i= 0; i < arg_count; i++)
+  uint last= arg_count - 1;
+  for (uint i= 0; i < last; i++)
   {
     if (!args[i]->get_bool(to))
       return false;
   }
-  return true;
+  return args[last]->get_bool(to);
 }
 
 
 bool Item_func_coalesce::get_longlong(longlong *to)
 {
-  for (uint i= 0; i < arg_count; i++)
+  uint last= arg_count - 1;
+  for (uint i= 0; i < last; i++)
   {
     if (!args[i]->get_longlong(to))
       return false;
   }
-  return true;
+  return args[last]->get_longlong(to);
 }
 
 
 bool Item_func_coalesce::get_int32(int32 *to)
 {
-  for (uint i= 0; i < arg_count; i++)
+  uint last= arg_count - 1;
+  for (uint i= 0; i < last; i++)
   {
     if (!args[i]->get_int32(to))
       return false;
   }
-  return true;
+  return args[last]->get_int32(to);
 }
 
 
 bool Item_func_coalesce::get_double(double *to)
 {
-  for (uint i= 0; i < arg_count; i++)
+  uint last= arg_count - 1;
+  for (uint i= 0; i < last; i++)
   {
     if (!args[i]->get_double(to))
       return false;
   }
-  return true;
+  return args[last]->get_double(to);
 }
 
 
 Bool_null Item_func_coalesce::to_bool_null()
 {
-  for (uint i= 0; i < arg_count; i++)
+  uint last= arg_count - 1;
+  for (uint i= 0; i < last; i++)
   {
     Bool_null tmp= args[i]->to_bool_null();
     if (!tmp.is_null)
       return tmp;
   }
-  return Bool_null();
+  return args[last]->to_bool_null();
 }
 
 Longlong_null Item_func_coalesce::to_longlong_null()
 {
-  for (uint i= 0; i < arg_count; i++)
+  uint last= arg_count - 1;
+  for (uint i= 0; i < last; i++)
   {
     Longlong_null tmp= args[i]->to_longlong_null();
     if (!tmp.is_null)
       return tmp;
   }
-  return Longlong_null();
+  return args[last]->to_longlong_null();
 }
 
 Int32_null Item_func_coalesce::to_int32_null()
 {
-  for (uint i= 0; i < arg_count; i++)
+  uint last= arg_count - 1;
+  for (uint i= 0; i < last; i++)
   {
     Int32_null tmp= args[i]->to_int32_null();
     if (!tmp.is_null)
       return tmp;
   }
-  return Int32_null();
+  return args[last]->to_int32_null();
 }
 
 Double_null Item_func_coalesce::to_double_null()
 {
-  for (uint i= 0; i < arg_count; i++)
+  uint last= arg_count - 1;
+  for (uint i= 0; i < last; i++)
   {
     Double_null tmp= args[i]->to_double_null();
     if (!tmp.is_null)
       return tmp;
   }
-  return Double_null();
+  return args[last]->to_double_null();
 }
 
 /****************************************************************/
