@@ -391,21 +391,21 @@ Bool_null Item_cond_or::to_bool_null()
 Longlong_null Item_cond_or::to_longlong_null()
 {
   Bool_null tmp= Item_cond_or::to_bool_null();
-  return tmp.is_null ? Longlong_null() : Longlong_null(tmp.value);
+  return Longlong_null(tmp.value, tmp.is_null);
 }
 
 
 Int32_null Item_cond_or::to_int32_null()
 {
   Bool_null tmp= Item_cond_or::to_bool_null();
-  return tmp.is_null ? Int32_null() : Int32_null(tmp.value);
+  return Int32_null(tmp.value, tmp.is_null);
 }
 
 
 Double_null Item_cond_or::to_double_null()
 {
   Bool_null tmp= Item_cond_or::to_bool_null();
-  return tmp.is_null ? Double_null() : Double_null(tmp.value);
+  return Double_null(tmp.value, tmp.is_null);
 }
 
 
