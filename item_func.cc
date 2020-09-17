@@ -374,16 +374,17 @@ double Item_cond_or::val_real_null(bool *null_value_arg)
 
 Bool_null Item_cond_or::to_bool_null()
 {
-  bool had_nulls= false;
-  for (uint i= 0 ; i < arg_count; i++)
+  Bool_null res= args[0]->to_bool_null();
+  if (res.is_true())
+    return res;
+  for (uint i= 1; i < arg_count; i++)
   {
     Bool_null tmp= args[i]->to_bool_null();
-    if (tmp.value)
+    if (tmp.is_true())
       return tmp;
-    if (tmp.is_null)
-      had_nulls= true;
+    res|= tmp;
   }
-  return had_nulls ? Bool_null() : Bool_null(false);
+  return res;
 }
 
 

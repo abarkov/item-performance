@@ -13,6 +13,16 @@ public:
   Bool_null()
    :value(false), is_null(true)
   { }
+  Bool_null & operator|=(const Bool_null &other)
+  {
+    value|= other.value;
+    is_null|= other.value;
+    return *this;
+  }
+  bool is_true() const
+  {
+    return !is_null && value;
+  }
 };
 
 #endif
