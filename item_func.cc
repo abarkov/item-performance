@@ -568,7 +568,7 @@ Double_null Item_func_add::to_double_null()
 #endif
 
   // Version with two nr
-#if 1
+#if 0
   Double_null nr0= args[0]->to_double_null();
   if (nr0.is_null)
     return nr0;
@@ -579,7 +579,7 @@ Double_null Item_func_add::to_double_null()
   return nr0;
 #endif
 
-#if 0
+#if 1
   const Double_null nr0= args[0]->to_double_null();
   if (nr0.is_null)
     return nr0;
