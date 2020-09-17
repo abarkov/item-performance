@@ -9,6 +9,17 @@ namespace
 {
 
 #define TEST_SET(NAME, ITEM)                                                   \
+  void BM_##NAME##_val_bool(benchmark::State &state)                           \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      ITEM->val_bool();                                                        \
+      bool is_null= ITEM->null_value;                                          \
+      benchmark::DoNotOptimize(is_null);                                       \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_val_bool);                                             \
+                                                                               \
   void BM_##NAME##_get_bool(benchmark::State &state)                           \
   {                                                                            \
     for (auto _ : state)                                                       \
@@ -35,6 +46,17 @@ namespace
       ITEM->to_bool_null();                                                    \
   }                                                                            \
   BENCHMARK(BM_##NAME##_to_bool_null);                                         \
+                                                                               \
+  void BM_##NAME##_val_int(benchmark::State &state)                            \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      ITEM->val_int();                                                         \
+      bool is_null= ITEM->null_value;                                          \
+      benchmark::DoNotOptimize(is_null);                                       \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_val_int);                                              \
                                                                                \
   void BM_##NAME##_get_longlong(benchmark::State &state)                       \
   {                                                                            \
@@ -63,6 +85,17 @@ namespace
   }                                                                            \
   BENCHMARK(BM_##NAME##_to_longlong_null);                                     \
                                                                                \
+  void BM_##NAME##_val_int32(benchmark::State &state)                          \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      ITEM->val_int32();                                                       \
+      bool is_null= ITEM->null_value;                                          \
+      benchmark::DoNotOptimize(is_null);                                       \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_val_int32);                                            \
+                                                                               \
   void BM_##NAME##_get_int32(benchmark::State &state)                          \
   {                                                                            \
     for (auto _ : state)                                                       \
@@ -89,6 +122,17 @@ namespace
       ITEM->to_int32_null();                                                   \
   }                                                                            \
   BENCHMARK(BM_##NAME##_to_int32_null);                                        \
+                                                                               \
+  void BM_##NAME##_val_real(benchmark::State &state)                           \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      ITEM->val_real();                                                        \
+      bool is_null= ITEM->null_value;                                          \
+      benchmark::DoNotOptimize(is_null);                                       \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_val_real);                                             \
                                                                                \
   void BM_##NAME##_get_double(benchmark::State &state)                         \
   {                                                                            \
