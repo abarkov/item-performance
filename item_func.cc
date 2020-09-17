@@ -382,7 +382,7 @@ Bool_null Item_cond_or::to_bool_null()
     Bool_null tmp= args[i]->to_bool_null();
     if (tmp.is_true())
       return tmp;
-    res|= tmp;
+    res|= tmp; // This ORs the NULL flag
   }
   return res;
 }
