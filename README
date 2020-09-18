@@ -84,3 +84,10 @@ val_real       - double val_xxx() - with Item::null_value - current aproach
 val_real_null  - double val_real_null(bool *null_value)"  - NULL flag as outvar
 get_double     - bool get_double(double *val)             - Return NULL flag
 to_double_null - Double_null to_double_null()             - Return a struct
+
+
+TODO
+====
+- Add Item_field
+- Add Item_func_eq
+- Add Item_equal
