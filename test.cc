@@ -209,7 +209,7 @@ public:
 };
 
 
-class Test_b: public Test
+class Test_bool_misc: public Test
 {
 public:
   const char *name() const override { return "bool_misc"; }
@@ -247,7 +247,7 @@ public:
 };
 
 
-class Test_b_or: public Test
+class Test_bool_or: public Test
 {
 public:
   const char *name() const override { return "bool_or"; }
@@ -291,7 +291,7 @@ public:
 };
 
 
-class Test_b_coalesce: public Test
+class Test_bool_coalesce: public Test
 {
 public:
   const char *name() const override { return "bool_coalesce"; }
@@ -331,7 +331,7 @@ public:
 };
 
 
-class Test_ll: public Test
+class Test_ll_misc: public Test
 {
 public:
   const char *name() const override { return "ll_misc"; }
@@ -457,7 +457,7 @@ public:
 };
 
 
-class Test_d: public Test
+class Test_double_misc: public Test
 {
 public:
   const char *name() const override { return "double_misc"; }
@@ -503,7 +503,7 @@ public:
 };
 
 
-class Test_d_plus: public Test
+class Test_double_plus: public Test
 {
 public:
   const char *name() const override { return "double_plus"; }
@@ -538,7 +538,7 @@ public:
 };
 
 
-class Test_d_coalesce: public Test
+class Test_double_coalesce: public Test
 {
 public:
   const char *name() const override { return "double_coalesce"; }
@@ -592,41 +592,41 @@ public:
 MethodStatByType run(const char *name, ulonglong count)
 {
   static const Test_null_misc         test_null_misc;
-  static const Test_b                 test_b;
+  static const Test_bool_misc         test_bool_misc;
   static const Test_bool_eq           test_bool_eq;
-  static const Test_b_or              test_b_or;
-  static const Test_b_coalesce        test_b_coalesce;
+  static const Test_bool_or           test_bool_or;
+  static const Test_bool_coalesce     test_bool_coalesce;
   static const Test_bool_isnull       test_null_isnull;
   static const Test_bool_last_value   test_bool_last_value;
-  static const Test_ll                test_ll;
+  static const Test_ll_misc           test_ll_misc;
   static const Test_ll_eq             test_ll_eq;
   static const Test_ll_plus           test_ll_plus;
   static const Test_ll_coalesce       test_ll_coalesce;
   static const Test_ll_last_value     test_ll_last_value;
-  static const Test_d                 test_d;
+  static const Test_double_misc       test_double_misc;
   static const Test_double_eq         test_double_eq;
-  static const Test_d_plus            test_d_plus;
-  static const Test_d_coalesce        test_d_coalesce;
+  static const Test_double_plus       test_double_plus;
+  static const Test_double_coalesce   test_double_coalesce;
   static const Test_double_last_value test_double_last_value;
 
   static const Test *tests[]=
   {
     &test_null_misc,
     &test_null_isnull,
-    &test_b,
+    &test_bool_misc,
     &test_bool_eq,
-    &test_b_or,
-    &test_b_coalesce,
+    &test_bool_or,
+    &test_bool_coalesce,
     &test_bool_last_value,
-    &test_ll,
+    &test_ll_misc,
     &test_ll_eq,
     &test_ll_plus,
     &test_ll_coalesce,
     &test_ll_last_value,
-    &test_d,
+    &test_double_misc,
     &test_double_eq,
-    &test_d_plus,
-    &test_d_coalesce,
+    &test_double_plus,
+    &test_double_coalesce,
     &test_double_last_value,
     NULL
   };
