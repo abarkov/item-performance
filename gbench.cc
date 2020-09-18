@@ -34,7 +34,7 @@ namespace
   {                                                                            \
     for (auto _ : state)                                                       \
     {                                                                          \
-      bool is_null;                                                            \
+      bool is_null= false;                                                     \
       ITEM->val_bool_null(&is_null);                                           \
     }                                                                          \
   }                                                                            \
@@ -72,7 +72,7 @@ namespace
   {                                                                            \
     for (auto _ : state)                                                       \
     {                                                                          \
-      bool is_null;                                                            \
+      bool is_null= false;                                                     \
       ITEM->val_int_null(&is_null);                                            \
     }                                                                          \
   }                                                                            \
@@ -110,7 +110,7 @@ namespace
   {                                                                            \
     for (auto _ : state)                                                       \
     {                                                                          \
-      bool is_null;                                                            \
+      bool is_null= false;                                                     \
       ITEM->val_int32_null(&is_null);                                          \
     }                                                                          \
   }                                                                            \
@@ -148,7 +148,7 @@ namespace
   {                                                                            \
     for (auto _ : state)                                                       \
     {                                                                          \
-      bool is_null;                                                            \
+      bool is_null= false;                                                     \
       ITEM->val_real_null(&is_null);                                           \
     }                                                                          \
   }                                                                            \
