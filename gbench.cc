@@ -184,6 +184,10 @@ TEST_SET(Item_func_coalesce1, g_coalesce1);
 TEST_SET(Item_func_coalesce3, g_coalesce3);
 TEST_SET(Item_func_coalesce_bool, g_coalesce_bool);
 
+std::pair<Item *, std::vector<std::unique_ptr<Item>>> g_random_tree=
+    generate_tree(40);
+TEST_SET(Item_random_tree, g_random_tree.first);
+
 } // namespace
 
 BENCHMARK_MAIN();

@@ -1,5 +1,6 @@
 #include "item_func.h"
 #include <string>
+#include <random>
 
 
 void Item_null::print(string *to)
@@ -1235,4 +1236,84 @@ Double_null Item_func_eq::to_double_null()
 {
   const Bool_null nr0= Item_func_eq::to_bool_null();
   return Double_null(nr0.value, nr0.is_null);
+}
+
+static inline size_t get_random_int() {
+  static std::random_device rd;
+  static std::default_random_engine dre(rd());
+  static std::uniform_int_distribution<size_t> ud(1, 20000);
+  return ud(dre);
+}
+
+Item *node_factory(size_t depth_left,
+                   std::vector<std::unique_ptr<Item>> &storage)
+{
+  switch (get_random_int() % 16)
+  {
+  case 0:
+    return new Item_int(0x27);
+  case 1:
+    return new Item_null;
+  case 2:
+    return new Item_bool(true);
+  case 3:
+    return new Item_real(123.432);
+  case 4:
+    return new Item_func_add(generate_node(depth_left - 1, storage),
+                             generate_node(depth_left - 1, storage));
+  case 5:
+    return new Item_cond_or(generate_node(depth_left - 1, storage),
+                            generate_node(depth_left - 1, storage));
+  case 6:
+    return new Item_cond_or(generate_node(depth_left - 1, storage),
+                            generate_node(depth_left - 1, storage),
+                            generate_node(depth_left - 1, storage));
+  case 7:
+    return new Item_func_uminus(generate_node(depth_left - 1, storage));
+  case 8:
+    return new Item_func_isnull(generate_node(depth_left - 1, storage));
+  case 9:
+    return new Item_func_coalesce(generate_node(depth_left - 1, storage));
+  case 10:
+    return new Item_func_coalesce(generate_node(depth_left - 1, storage),
+                                  generate_node(depth_left - 1, storage));
+  case 11:
+    return new Item_func_coalesce(generate_node(depth_left - 1, storage),
+                                  generate_node(depth_left - 1, storage),
+                                  generate_node(depth_left - 1, storage));
+  case 12:
+    return new Item_func_eq(generate_node(depth_left - 1, storage),
+                            generate_node(depth_left - 1, storage));
+  case 13:
+    return new Item_func_last_value(generate_node(depth_left - 1, storage));
+  case 14:
+    return new Item_func_last_value(generate_node(depth_left - 1, storage),
+                                    generate_node(depth_left - 1, storage));
+  case 15:
+    return new Item_func_last_value(generate_node(depth_left - 1, storage),
+                                    generate_node(depth_left - 1, storage),
+                                    generate_node(depth_left - 1, storage));
+  default:
+    assert(0);
+    return nullptr;
+  }
+
+  __builtin_unreachable();
+}
+
+Item *generate_node(size_t depth_left,
+                    std::vector<std::unique_ptr<Item>> &storage)
+{
+  assert(depth_left > 0);
+
+  if (depth_left == 1)
+  {
+    storage.emplace_back(new Item_int(0x27));
+    return storage.back().get();
+  }
+
+  Item *node = node_factory(depth_left, storage);
+  storage.emplace_back(node);
+
+  return node;
 }

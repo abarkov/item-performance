@@ -1,8 +1,12 @@
 #ifndef ITEM_H
 #define ITEM_H
 
+#include <cassert>
+
 #include <iostream>
 #include <string>
+#include <vector>
+#include <memory>
 
 #include "mysql_com.h"
 
@@ -528,5 +532,26 @@ public:
     return Int32_null((int32) val);
   }
 };
+
+
+Item *generate_node(size_t depth_left,
+                    std::vector<std::unique_ptr<Item>> &storage);
+
+static inline std::pair<Item *, std::vector<std::unique_ptr<Item>>>
+generate_tree(size_t max_depth)
+{
+  assert(max_depth > 0);
+
+  std::vector<std::unique_ptr<Item>> storage;
+
+  Item *root= generate_node(max_depth, storage);
+
+  std::string as_string;
+  root->print(&as_string);
+  std::cout << "                " << as_string << '\n';
+
+  assert(!storage.empty());
+  return {root, std::move(storage)};
+}
 
 #endif
