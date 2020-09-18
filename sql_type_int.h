@@ -17,12 +17,6 @@ public:
   Int32_null()
    :value(0), is_null(true)
   { }
-  inline Int32_null operator+(int32 other) const
-  {
-    if (!is_null)
-      return Int32_null(value + other);
-    return *this;
-  }
   inline Int32_null & neg()
   {
     value= -value;
@@ -42,29 +36,6 @@ public:
   Longlong_null()
    :value(0), is_null(true)
   { }
-  inline Longlong_null &operator+=(const Longlong_null &other)
-  {
-    if (!(is_null|= other.is_null))
-      value+= other.value;
-    else
-    {
-      value= 0;
-      is_null= true;
-    }
-    return *this;
-  }
-  inline Longlong_null &operator+=(longlong other)
-  {
-    if (!is_null)
-      value+= other;
-    return *this;
-  }
-  inline Longlong_null operator+(longlong other) const
-  {
-    if (!is_null)
-      return Longlong_null(value + other);
-    return *this;
-  }
   inline Longlong_null & neg()
   {
     value= -value;
