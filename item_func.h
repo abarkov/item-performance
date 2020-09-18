@@ -29,7 +29,7 @@ protected:
 
 class Hybrid_field_type
 {
-protected:
+public:
   enum_field_types m_field_type;
   Hybrid_field_type(enum_field_types t)
    :m_field_type(t)
@@ -265,6 +265,221 @@ public:
   Item_func_coalesce(Item *a, Item *b) :Item_hybrid_func(a,b) { }
   Item_func_coalesce(Item *a, Item *b, Item *c) :Item_hybrid_func(a,b,c) { }
   void print(string *to) override;
+#ifdef HAVE_NULL_VALUE
+  bool val_bool() override;
+  double val_real() override;
+  longlong val_int() override;
+  int32 val_int32() override;
+#endif
+
+  bool val_bool_null(bool *null_value_arg) override;
+  longlong val_int_null(bool *null_value_arg) override;
+  int32 val_int32_null(bool *null_value_arg) override;
+  double val_real_null(bool *null_value_arg) override;
+
+  bool get_bool(bool *to) override;
+  bool get_longlong(longlong *to) override;
+  bool get_int32(int32 *to) override;
+  bool get_double(double *to) override;
+
+  Bool_null to_bool_null() override;
+  Longlong_null to_longlong_null() override;
+  Int32_null to_int32_null() override;
+  Double_null to_double_null() override;
+};
+
+
+class Arg_comparator
+{
+  Item *owner, *a, *b;
+public:
+  Arg_comparator(Item *owner_arg, Item *a_arg, Item *b_arg)
+   :owner(owner_arg), a(a_arg), b(b_arg)
+  { }
+  /*************************/
+  bool eq_ll_using_val_int()
+  {
+    longlong val0= a->val_int();
+    if (a->null_value)
+    {
+      owner->null_value= true;
+      return false;
+    }
+    longlong val1= b->val_int();
+    if (b->null_value)
+    {
+      owner->null_value= true;
+      return false;
+    }
+    owner->null_value= false;
+    return val0 == val1;
+  }
+  bool eq_ll_using_val_int_null(bool *null_value_arg)
+  {
+    bool val0= a->val_int_null(null_value_arg);
+    if (*null_value_arg)
+      return false;
+    longlong val1= b->val_int_null(null_value_arg);
+    return val0 == val1;
+  }
+  bool eq_ll_using_get_longlong(bool *to)
+  {
+    longlong val0, val1;
+    if (a->get_longlong(&val0) || b->get_longlong(&val1))
+      return true;
+    *to= val0 == val1;
+    return false;
+  }
+  Bool_null eq_ll_using_to_longlong_null()
+  {
+    const Longlong_null nr0= a->to_longlong_null();
+    if (nr0.is_null)
+      return Bool_null();
+    const Longlong_null nr1= b->to_longlong_null();
+    return Bool_null(nr0.value == nr1.value, nr1.is_null);
+  }
+  /*************************/
+  bool eq_int32_using_val_int32()
+  {
+    int32 val0= a->val_int32();
+    if (a->null_value)
+    {
+      owner->null_value= true;
+      return false;
+    }
+    int32 val1= b->val_int32();
+    if (b->null_value)
+    {
+      owner->null_value= true;
+      return false;
+    }
+    owner->null_value= false;
+    return val0 == val1;
+  }
+  bool eq_int32_using_val_int32_null(bool *null_value_arg)
+  {
+    bool val0= a->val_int32_null(null_value_arg);
+    if (*null_value_arg)
+      return false;
+    int32 val1= b->val_int32_null(null_value_arg);
+    return val0 == val1;
+  }
+  bool eq_int32_using_get_int32(bool *to)
+  {
+    int32 val0, val1;
+    if (a->get_int32(&val0) || b->get_int32(&val1))
+      return true;
+    *to= val0 == val1;
+    return false;
+  }
+  Bool_null eq_int32_using_to_int32_null()
+  {
+    const Int32_null nr0= a->to_int32_null();
+    if (nr0.is_null)
+      return Bool_null();
+    const Int32_null nr1= b->to_int32_null();
+    return Bool_null(nr0.value == nr1.value, nr1.is_null);
+  }
+  /*************************/
+  bool eq_double_using_val_real()
+  {
+    double val0= a->val_real();
+    if (a->null_value)
+    {
+      owner->null_value= true;
+      return false;
+    }
+    double val1= b->val_real();
+    if (b->null_value)
+    {
+      owner->null_value= true;
+      return false;
+    }
+    owner->null_value= false;
+    return val0 == val1;
+  }
+  bool eq_double_using_val_real_null(bool *null_value_arg)
+  {
+    bool val0= a->val_real_null(null_value_arg);
+    if (*null_value_arg)
+      return false;
+    double val1= b->val_real_null(null_value_arg);
+    return val0 == val1;
+  }
+  bool eq_double_using_get_double(bool *to)
+  {
+    double val0, val1;
+    if (a->get_double(&val0) || b->get_double(&val1))
+      return true;
+    *to= val0 == val1;
+    return false;
+  }
+  Bool_null eq_double_using_to_double_null()
+  {
+    const Double_null nr0= a->to_double_null();
+    if (nr0.is_null)
+      return Bool_null();
+    const Double_null nr1= b->to_double_null();
+    return Bool_null(nr0.value == nr1.value, nr1.is_null);
+  }
+  /*************************/
+  bool eq_bool_using_val_bool()
+  {
+    bool val0= a->val_bool();
+    if (a->null_value)
+    {
+      owner->null_value= true;
+      return false;
+    }
+    bool val1= b->val_bool();
+    if (b->null_value)
+    {
+      owner->null_value= true;
+      return false;
+    }
+    owner->null_value= false;
+    return val0 == val1;
+  }
+  bool eq_bool_using_val_bool_null(bool *null_value_arg)
+  {
+    bool val0= a->val_bool_null(null_value_arg);
+    if (*null_value_arg)
+      return false;
+    bool val1= b->val_bool_null(null_value_arg);
+    return val0 == val1;
+  }
+  bool eq_bool_using_get_bool(bool *to)
+  {
+    bool val0, val1;
+    if (a->get_bool(&val0) || b->get_bool(&val1))
+      return true;
+    *to= val0 == val1;
+    return false;
+  }
+  Bool_null eq_bool_using_to_bool_null()
+  {
+    const Bool_null nr0= a->to_bool_null();
+    if (nr0.is_null)
+      return nr0;
+    const Bool_null nr1= b->to_bool_null();
+    return Bool_null(nr0.value == nr1.value, nr1.is_null);
+  }
+};
+
+
+class Item_func_eq: public Item_func
+{
+  Arg_comparator cmp;
+  Hybrid_field_type cmp_type;
+public:
+  Item_func_eq(Item *a, Item *b)
+   :Item_func(a, b), cmp(this, a, b), cmp_type(a->field_type(), b->field_type()) { }
+  void print(string *to) override;
+  enum_field_types field_type() const override
+  {
+    return MYSQL_TYPE_BOOL;
+  }
+
 #ifdef HAVE_NULL_VALUE
   bool val_bool() override;
   double val_real() override;

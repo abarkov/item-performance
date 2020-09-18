@@ -1064,3 +1064,175 @@ Double_null Item_func_last_value::to_double_null()
   evaluate_sideeffects_to_longlong_null();
   return last_value->to_double_null();
 }
+
+/******************************************************************/
+
+
+void Item_func_eq::print(string *to)
+{
+  to->append("(");
+  args[0]->print(to);
+  to->append(" = ");
+  args[1]->print(to);
+  to->append(")");
+}
+
+
+#ifdef HAVE_NULL_VALUE
+bool Item_func_eq::val_bool()
+{
+  switch (cmp_type.m_field_type) {
+  case MYSQL_TYPE_NULL:
+  case MYSQL_TYPE_BOOL:
+    return cmp.eq_bool_using_val_bool();
+  case MYSQL_TYPE_LONGLONG:
+    return cmp.eq_ll_using_val_int();
+  case MYSQL_TYPE_DOUBLE:
+    return cmp.eq_double_using_val_real();
+  }
+  return 0; // Make compliler happy
+}
+#endif
+
+
+#ifdef HAVE_NULL_VALUE
+double Item_func_eq::val_real()
+{
+  return Item_func_eq::val_bool();
+}
+#endif
+
+
+#ifdef HAVE_NULL_VALUE
+longlong Item_func_eq::val_int()
+{
+  return Item_func_eq::val_bool();
+}
+#endif
+
+
+#ifdef HAVE_NULL_VALUE
+int32 Item_func_eq::val_int32()
+{
+  return Item_func_eq::val_bool();
+}
+#endif
+
+
+bool Item_func_eq::val_bool_null(bool *null_value_arg)
+{
+  return cmp.eq_ll_using_val_int_null(null_value_arg);
+  switch (cmp_type.m_field_type) {
+  case MYSQL_TYPE_NULL:
+  case MYSQL_TYPE_BOOL:
+    return cmp.eq_bool_using_val_bool_null(null_value_arg);
+  case MYSQL_TYPE_LONGLONG:
+    return cmp.eq_ll_using_val_int_null(null_value_arg);
+  case MYSQL_TYPE_DOUBLE:
+    return cmp.eq_double_using_val_real_null(null_value_arg);
+  }
+  // Make compiler happy
+  *null_value_arg= false;
+  return false;
+}
+
+
+longlong Item_func_eq::val_int_null(bool *null_value_arg)
+{
+  return Item_func_eq::val_bool_null(null_value_arg);
+}
+
+
+int32 Item_func_eq::val_int32_null(bool *null_value_arg)
+{
+  return Item_func_eq::val_bool_null(null_value_arg);
+}
+
+
+double Item_func_eq::val_real_null(bool *null_value_arg)
+{
+  return Item_func_eq::val_bool_null(null_value_arg);
+}
+
+
+bool Item_func_eq::get_bool(bool *to)
+{
+  return cmp.eq_ll_using_get_longlong(to);
+
+  switch (cmp_type.m_field_type) {
+  case MYSQL_TYPE_NULL:
+  case MYSQL_TYPE_BOOL:
+    return cmp.eq_bool_using_get_bool(to);
+  case MYSQL_TYPE_LONGLONG:
+    return cmp.eq_ll_using_get_longlong(to);
+  case MYSQL_TYPE_DOUBLE:
+    return cmp.eq_double_using_get_double(to);
+  }
+  *to= false;
+  return false; // Make compiler happy
+}
+
+
+bool Item_func_eq::get_longlong(longlong *to)
+{
+  bool nr;
+  bool isnull= Item_func_eq::get_bool(&nr);
+  *to= nr;
+  return isnull;
+}
+
+
+bool Item_func_eq::get_int32(int32 *to)
+{
+  bool nr;
+  bool isnull= Item_func_eq::get_bool(&nr);
+  *to= nr;
+  return isnull;
+}
+
+
+bool Item_func_eq::get_double(double *to)
+{
+  bool nr;
+  bool isnull= Item_func_eq::get_bool(&nr);
+  *to= nr;
+  return isnull;
+}
+
+
+Bool_null Item_func_eq::to_bool_null()
+{
+  return cmp.eq_ll_using_to_longlong_null();
+
+  switch (cmp_type.m_field_type) {
+  case MYSQL_TYPE_NULL:
+  case MYSQL_TYPE_BOOL:
+    return cmp.eq_bool_using_to_bool_null();
+  case MYSQL_TYPE_LONGLONG:
+    return cmp.eq_ll_using_to_longlong_null();
+  case MYSQL_TYPE_DOUBLE:
+    return cmp.eq_double_using_to_double_null();
+  }
+  return Bool_null(false);
+}
+
+
+Longlong_null Item_func_eq::to_longlong_null()
+{
+  const Bool_null nr= Item_func_eq::to_bool_null();
+  return Longlong_null(nr.value, nr.is_null);
+}
+
+
+Int32_null Item_func_eq::to_int32_null()
+{
+  const Bool_null nr= Item_func_eq::to_bool_null();
+  return Int32_null(nr.value, nr.is_null);
+}
+
+
+Double_null Item_func_eq::to_double_null()
+{
+  const Bool_null nr0= Item_func_eq::to_bool_null();
+  return Double_null(nr0.value, nr0.is_null);
+}

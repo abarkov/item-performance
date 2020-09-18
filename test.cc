@@ -226,6 +226,27 @@ public:
 };
 
 
+class Test_bool_eq: public Test
+{
+public:
+  const char *name() const override { return "bool_eq"; }
+  MethodStatByType run(ulonglong count) const override
+  {
+    Item *nl= new Item_null;
+    Item *b0= new Item_bool(false);
+    Item *cmp1= new Item_func_eq(nl, nl);
+    Item *cmp2= new Item_func_eq(b0, nl);
+    Item *cmp3= new Item_func_eq(b0, b0);
+
+    Item *items[]= {cmp1, cmp2, cmp3, NULL};
+    MethodStatByType st;
+    for (uint i= 0; items[i]; i++)
+      st+= test_b(items[i], count);
+    return st;
+  }
+};
+
+
 class Test_b_or: public Test
 {
 public:
@@ -415,6 +436,27 @@ public:
 };
 
 
+class Test_ll_eq: public Test
+{
+public:
+  const char *name() const override { return "ll_eq"; }
+  MethodStatByType run(ulonglong count) const override
+  {
+    Item *nl= new Item_null;
+    Item *b0= new Item_int(x);
+    Item *cmp1= new Item_func_eq(nl, nl);
+    Item *cmp2= new Item_func_eq(b0, nl);
+    Item *cmp3= new Item_func_eq(b0, b0);
+
+    Item *items[]= {cmp1, cmp2, cmp3, NULL};
+    MethodStatByType st;
+    for (uint i= 0; items[i]; i++)
+      st+= test_b(items[i], count);
+    return st;
+  }
+};
+
+
 class Test_d: public Test
 {
 public:
@@ -435,6 +477,27 @@ public:
     };
     for (uint i= 0; items[i]; i++)
       st+= test_d(items[i], count);
+    return st;
+  }
+};
+
+
+class Test_double_eq: public Test
+{
+public:
+  const char *name() const override { return "double_eq"; }
+  MethodStatByType run(ulonglong count) const override
+  {
+    Item *nl= new Item_null;
+    Item *b0= new Item_real(x);
+    Item *cmp1= new Item_func_eq(nl, nl);
+    Item *cmp2= new Item_func_eq(b0, nl);
+    Item *cmp3= new Item_func_eq(b0, b0);
+
+    Item *items[]= {cmp1, cmp2, cmp3, NULL};
+    MethodStatByType st;
+    for (uint i= 0; items[i]; i++)
+      st+= test_b(items[i], count);
     return st;
   }
 };
@@ -530,15 +593,18 @@ MethodStatByType run(const char *name, ulonglong count)
 {
   static const Test_null_misc         test_null_misc;
   static const Test_b                 test_b;
+  static const Test_bool_eq           test_bool_eq;
   static const Test_b_or              test_b_or;
   static const Test_b_coalesce        test_b_coalesce;
   static const Test_bool_isnull       test_null_isnull;
   static const Test_bool_last_value   test_bool_last_value;
   static const Test_ll                test_ll;
+  static const Test_ll_eq             test_ll_eq;
   static const Test_ll_plus           test_ll_plus;
   static const Test_ll_coalesce       test_ll_coalesce;
   static const Test_ll_last_value     test_ll_last_value;
   static const Test_d                 test_d;
+  static const Test_double_eq         test_double_eq;
   static const Test_d_plus            test_d_plus;
   static const Test_d_coalesce        test_d_coalesce;
   static const Test_double_last_value test_double_last_value;
@@ -548,14 +614,17 @@ MethodStatByType run(const char *name, ulonglong count)
     &test_null_misc,
     &test_null_isnull,
     &test_b,
+    &test_bool_eq,
     &test_b_or,
     &test_b_coalesce,
     &test_bool_last_value,
     &test_ll,
+    &test_ll_eq,
     &test_ll_plus,
     &test_ll_coalesce,
     &test_ll_last_value,
     &test_d,
+    &test_double_eq,
     &test_d_plus,
     &test_d_coalesce,
     &test_double_last_value,
