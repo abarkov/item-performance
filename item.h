@@ -1,18 +1,10 @@
 #ifndef ITEM_H
 #define ITEM_H
 
-
-#define likely(x)      __builtin_expect(!!(x), 1) 
-#define unlikely(x)    __builtin_expect(!!(x), 0) 
-
 #include <iostream>
 #include <string>
 
-#if defined (__clang__)
-#define COMPILER "clang"
-#elif defined(__GNUC__)
-#define COMPILER "gcc"
-#endif
+#include "mysql_com.h"
 
 #include "sql_type_bool.h"
 #include "sql_type_double.h"
@@ -20,13 +12,6 @@
 
 using namespace std;
 
-enum enum_field_types
-{
-  MYSQL_TYPE_NULL=       0,
-  MYSQL_TYPE_BOOL=       1,
-  MYSQL_TYPE_LONGLONG=   2,
-  MYSQL_TYPE_DOUBLE=     3
-};
 
 
 class Stat
