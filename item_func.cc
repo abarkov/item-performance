@@ -341,7 +341,7 @@ bool Item_cond_or::val_bool_null(bool *null_value_arg)
   for (uint i= 0 ; i < arg_count; i++)
   {
     bool null_cur;
-    if (args[i]->val_bool_null(&null_cur))
+    if (args[i]->val_bool_null(&null_cur) && !null_cur)
     {
       *null_value_arg= false;
       return true;
