@@ -318,22 +318,19 @@ double Item_func_uminus::val_real_null(bool *null_value_arg)
 
 Longlong_null Item_func_uminus::to_longlong_null()
 {
-  Longlong_null nr0= args[0]->to_longlong_null();
-  return Longlong_null(-nr0.value, nr0.is_null);
+  return args[0]->to_longlong_null().neg();
 }
 
 
 Int32_null Item_func_uminus::to_int32_null()
 {
-  Int32_null nr0= args[0]->to_int32_null();
-  return Int32_null(-nr0.value, nr0.is_null);
+  return args[0]->to_int32_null().neg();
 }
 
 
 Double_null Item_func_uminus::to_double_null()
 {
-  Double_null nr0= args[0]->to_double_null();
-  return Double_null(-nr0.value, nr0.is_null);
+  return args[0]->to_double_null().neg();
 }
 
 

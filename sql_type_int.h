@@ -23,6 +23,11 @@ public:
       return Int32_null(value + other);
     return *this;
   }
+  inline Int32_null & neg()
+  {
+    value= -value;
+    return *this;
+  }
 };
 
 
@@ -58,6 +63,11 @@ public:
   {
     if (!is_null)
       return Longlong_null(value + other);
+    return *this;
+  }
+  inline Longlong_null & neg()
+  {
+    value= -value;
     return *this;
   }
 };

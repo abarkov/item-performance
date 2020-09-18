@@ -28,6 +28,11 @@ public:
       return Double_null(value + other);
     return *this;
   }
+  inline Double_null & neg()
+  {
+    value= -value;
+    return *this;
+  }
 };
 
 #endif
