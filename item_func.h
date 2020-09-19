@@ -24,6 +24,9 @@ protected:
     args[1]= b;
     args[2]= c;
   }
+public:
+  uint argument_count() const { return arg_count; }
+  Item **arguments()  { return args; }
 };
 
 

@@ -8,6 +8,67 @@
 #include "item_func.h"
 
 
+class VM
+{
+public:
+  enum Cmd {
+    NOP= 0,
+    MOV_LL_TO_LL0,
+    MOV_LL_TO_LL1,
+    ADD_LL0_LL1
+  };
+  class Instr
+  {
+  public:
+    Cmd m_cmd;
+    Longlong_null m_param_ll;
+    Instr()
+     :m_cmd(NOP), m_param_ll(0, false)
+    { }
+    Instr(Cmd cmd)
+     :m_cmd(cmd), m_param_ll(Longlong_null())
+    { }
+    Instr(Cmd cmd, const Longlong_null &param)
+     :m_cmd(cmd), m_param_ll(param)
+    { }
+  };
+
+  Instr m_instr[100];
+  size_t m_instr_count;
+  Longlong_null m_ll0;
+  Longlong_null m_ll1;
+
+  VM() :m_instr_count(0) { }
+  bool add(const Instr &instr)
+  {
+    m_instr[m_instr_count]= instr;
+    m_instr_count++;
+    return false;
+  }
+  void exec_instr(const Instr &i)
+  {
+    switch (i.m_cmd) {
+    case MOV_LL_TO_LL0:
+      m_ll0= i.m_param_ll;
+      break;
+    case MOV_LL_TO_LL1:
+      m_ll1= i.m_param_ll;
+      break;
+    case ADD_LL0_LL1:
+      m_ll0= Longlong_null(m_ll0.value + m_ll1.value,
+                           m_ll0.is_null | m_ll1.is_null);
+      break;
+    }
+  }
+  void exec()
+  {
+    for (size_t i= 0; i < m_instr_count; i++)
+      exec_instr(m_instr[i]);
+  }
+};
+
+
+
 #ifdef HAVE_NULL_VALUE
 Stat Item::test_b_old(ulonglong count)
 {
@@ -46,8 +107,32 @@ Stat Item::test_d_old(ulonglong count)
 
 
 #ifdef HAVE_NULL_VALUE
+
 Stat Item::test_ll_old(ulonglong count)
 {
+  Item_func_add *add;
+  Item_int *ia, *ib;
+  if ((add= dynamic_cast<Item_func_add*>(this)) &&
+      add->argument_count() == 2 &&
+      (ia= dynamic_cast<Item_int*>(add->arguments()[0])) &&
+      (ib= dynamic_cast<Item_int*>(add->arguments()[1])))
+  {
+    VM vm;
+    vm.add(VM::Instr(VM::MOV_LL_TO_LL0, ia->to_longlong_null()));
+    vm.add(VM::Instr(VM::MOV_LL_TO_LL1, ib->to_longlong_null()));
+    vm.add(VM::Instr(VM::ADD_LL0_LL1));
+    Stat st;
+    Timer t0;
+    for (ulonglong i= 0 ; i < count; i++)
+    {
+      vm.exec();
+      if (!vm.m_ll0.is_null)
+        st.sum_ll+= vm.m_ll0.value;
+    }
+    st.time_spent= Timer().diff(t0);
+    st.method= "vm";
+    return st;
+  }
   Stat st;
   Timer t0;
   for (ulonglong i= 0 ; i < count; i++)
