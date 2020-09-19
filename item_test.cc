@@ -13,9 +13,10 @@ class VM
 public:
   enum Cmd {
     NOP= 0,
-    MOV_LL_TO_LL0,
-    MOV_LL_TO_LL1,
-    ADD_LL0_LL1
+    MOV_LL_TO_LL0, // Move Longlong_null constant to register LL0
+    MOV_LL_TO_LL1, // Move Longlong_null constant to register LL1
+    ADD_LL0_LL1,   // LL0+= LL1
+    ADD_LL0_LLI    // LL0+= Instr.m_param_ll
   };
   class Instr
   {
@@ -55,8 +56,10 @@ public:
       m_ll1= i.m_param_ll;
       break;
     case ADD_LL0_LL1:
-      m_ll0= Longlong_null(m_ll0.value + m_ll1.value,
-                           m_ll0.is_null | m_ll1.is_null);
+      m_ll0+= m_ll1;
+      break;
+    case ADD_LL0_LLI:
+      m_ll0+= i.m_param_ll;
       break;
     }
   }
@@ -119,8 +122,7 @@ Stat Item::test_ll_old(ulonglong count)
   {
     VM vm;
     vm.add(VM::Instr(VM::MOV_LL_TO_LL0, ia->to_longlong_null()));
-    vm.add(VM::Instr(VM::MOV_LL_TO_LL1, ib->to_longlong_null()));
-    vm.add(VM::Instr(VM::ADD_LL0_LL1));
+    vm.add(VM::Instr(VM::ADD_LL0_LLI, ib->to_longlong_null()));
     Stat st;
     Timer t0;
     for (ulonglong i= 0 ; i < count; i++)

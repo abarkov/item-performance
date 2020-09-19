@@ -41,6 +41,12 @@ public:
     value= -value;
     return *this;
   }
+  Longlong_null & operator+=(const Longlong_null &other)
+  {
+    value+= other.value;
+    is_null|= other.is_null;
+    return *this;
+  }
 };
 
 #endif
