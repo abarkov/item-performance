@@ -45,6 +45,11 @@ public:
     else
       m_field_type= MYSQL_TYPE_LONGLONG;
   }
+  Hybrid_field_type(enum_field_types ta,
+                    enum_field_types tb,
+                    enum_field_types tc)
+   :Hybrid_field_type(Hybrid_field_type(ta,tb).m_field_type, tc)
+  { }
 };
 
 
@@ -62,7 +67,7 @@ public:
   { }
   Item_hybrid_func(Item *a, Item *b, Item *c)
    :Item_func(a, b, c),
-    Hybrid_field_type(a->field_type(), b->field_type())
+    Hybrid_field_type(a->field_type(), b->field_type(), c->field_type())
   { }
   enum_field_types field_type() const override { return m_field_type; }
 };
@@ -140,14 +145,10 @@ public:
 };
 
 
-class Item_func_uminus: public Item_func
+class Item_func_uminus: public Item_hybrid_func
 {
 public:
-  Item_func_uminus(Item *a): Item_func(a) { }
-  enum_field_types field_type() const override
-  {
-    return MYSQL_TYPE_BOOL;
-  }
+  Item_func_uminus(Item *a): Item_hybrid_func(a) { }
   void print(string *to) override;
 #ifdef HAVE_NULL_VALUE
   bool val_bool() override;

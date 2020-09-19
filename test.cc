@@ -144,6 +144,43 @@ public:
 
     return stt;
   }
+
+  MethodStatByType test_native(Item *item, ulonglong count) const
+  {
+    StatAll st(
+#ifdef HAVE_NULL_VALUE
+      item->test_native_old(count),
+#else
+      Stat(),
+#endif
+      item->test_native_prm(count),
+      item->test_native_get(count),
+      item->test_native_new(count));
+    print(item, st);
+    printf("\n");
+    MethodStatByType stt;
+    switch (item->field_type()) {
+    case MYSQL_TYPE_NULL:
+    case MYSQL_TYPE_BOOL:
+      stt.st_bool+= MethodStat(st);
+      break;
+    case MYSQL_TYPE_LONGLONG:
+      stt.st_longlong+= MethodStat(st);
+      break;
+    case MYSQL_TYPE_DOUBLE:
+      stt.st_double+= MethodStat(st);
+      break;
+    }
+    return stt;
+  }
+
+  MethodStatByType test_native(Item **items, ulonglong count) const
+  {
+    MethodStatByType st;
+    for (uint i= 0; items[i]; i++)
+      st+= test_native(items[i], count);
+    return st;
+  }
 };
 
 
@@ -193,7 +230,7 @@ public:
     Item *isnull_ll0= new Item_func_isnull(ll0);   // 0 IS NULL
     Item *isnull_d0= new Item_func_isnull(d0);     // 0e0 IS NULL
 
-    Item *items_b[]=
+    Item *items[]=
     {
       isnull_nl,
       isnull_b0,
@@ -201,10 +238,7 @@ public:
       isnull_d0,
       NULL
     };
-    MethodStatByType st;
-    for (uint i= 0; items_b[i]; i++)
-      st+= test_b(items_b[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -218,10 +252,7 @@ public:
     Item *b0= new Item_bool(false);                // FALSE
     Item *b1= new Item_bool(true);                 // TRUE
     Item *items[]= {b0, b1, NULL};
-    MethodStatByType st;
-    for (uint i= 0 ; items[i]; i++)
-      st+= test_b(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -239,10 +270,7 @@ public:
     Item *cmp3= new Item_func_eq(b0, b0);
 
     Item *items[]= {cmp1, cmp2, cmp3, NULL};
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_b(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -283,10 +311,7 @@ public:
       or_b0_nl__b1,
       NULL
     };
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_b(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -303,10 +328,7 @@ public:
     Item *coalesce_nl_b0= new Item_func_coalesce(nl, b0); // COALESCE(NULL,FALSE)
  
     Item *items[]= {coalesce_b0, coalesce_nl_b0, NULL};
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_b(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -323,10 +345,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_b(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -342,10 +361,7 @@ public:
     Item *uminus_uminus_ll0= new Item_func_uminus(uminus_ll0);    // -(-INT)
  
     Item *items[]= {ll0, uminus_ll0, uminus_uminus_ll0, NULL};
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_ll(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -378,10 +394,7 @@ public:
       add_ll_ll_ll_ll_ll0,
       NULL
     };
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_ll(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -408,10 +421,7 @@ public:
       NULL
     };
 
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_ll(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -428,10 +438,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_ll(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -449,10 +456,7 @@ public:
     Item *cmp3= new Item_func_eq(b0, b0);
 
     Item *items[]= {cmp1, cmp2, cmp3, NULL};
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_b(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -475,9 +479,7 @@ public:
       uminus_uminus_d0,
       NULL
     };
-    for (uint i= 0; items[i]; i++)
-      st+= test_d(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -495,10 +497,7 @@ public:
     Item *cmp3= new Item_func_eq(b0, b0);
 
     Item *items[]= {cmp1, cmp2, cmp3, NULL};
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_b(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -530,10 +529,7 @@ public:
       add_d_d_d_d_d,
       NULL
     };
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_d(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -561,9 +557,7 @@ public:
       coalesce_nl_nl__d0,
       NULL
     };
-    for (uint i= 0; items[i]; i++)
-      st+= test_d(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -580,10 +574,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(d0, d0, d0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    MethodStatByType st;
-    for (uint i= 0; items[i]; i++)
-      st+= test_d(items[i], count);
-    return st;
+    return test_native(items, count);
   }
 };
 
@@ -604,10 +595,7 @@ public:
     std::pair<Item *, std::vector<std::unique_ptr<Item>>> g_random_tree=
       generate_tree(10);
     MethodStatByType st;
-    st+= test_b(g_random_tree.first, count);
-    st+= test_ll(g_random_tree.first, count);
-    st+= test_int32(g_random_tree.first, count);
-    st+= test_d(g_random_tree.first, count);
+    st+= test_native(g_random_tree.first, count);
 
     return st;
   }

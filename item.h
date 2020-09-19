@@ -139,6 +139,7 @@ public:
   Stat test_d_old(ulonglong count);
   Stat test_int32_old(ulonglong count);
   Stat test_ll_old(ulonglong count);
+  Stat test_native_old(ulonglong count);
 #endif
   virtual ~Item() { }
 
@@ -160,6 +161,10 @@ public:
   virtual Longlong_null to_longlong_null()= 0;
   virtual Int32_null to_int32_null()= 0;
   virtual Double_null to_double_null()= 0;
+
+  Stat test_native_prm(ulonglong count);
+  Stat test_native_get(ulonglong count);
+  Stat test_native_new(ulonglong count);
 
   Stat test_b_prm(ulonglong count);
   Stat test_b_get(ulonglong count);

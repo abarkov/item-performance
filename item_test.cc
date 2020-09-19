@@ -81,6 +81,21 @@ Stat Item::test_int32_old(ulonglong count)
 #endif
 
 
+#ifdef HAVE_NULL_VALUE
+Stat Item::test_native_old(ulonglong count)
+{
+  switch (field_type())
+  {
+  case MYSQL_TYPE_NULL:
+  case MYSQL_TYPE_BOOL:      return test_b_old(count);
+  case MYSQL_TYPE_LONGLONG:  return test_ll_old(count);
+  case MYSQL_TYPE_DOUBLE:    return test_d_old(count);
+  }
+  return Stat();
+}
+#endif
+
+
 
 Stat Item::test_b_prm(ulonglong count)
 {
@@ -279,4 +294,45 @@ Stat Item::test_int32_new(ulonglong count)
   st.time_spent= Timer().diff(t0);
   st.method= "to_int32_null";
   return st;
+}
+
+
+/***************************************************/
+
+Stat Item::test_native_prm(ulonglong count)
+{
+  switch (field_type())
+  {
+  case MYSQL_TYPE_NULL:
+  case MYSQL_TYPE_BOOL:      return test_b_prm(count);
+  case MYSQL_TYPE_LONGLONG:  return test_ll_prm(count);
+  case MYSQL_TYPE_DOUBLE:    return test_d_prm(count);
+  }
+  return Stat();
+}
+
+
+Stat Item::test_native_get(ulonglong count)
+{
+  switch (field_type())
+  {
+  case MYSQL_TYPE_NULL:
+  case MYSQL_TYPE_BOOL:      return test_b_get(count);
+  case MYSQL_TYPE_LONGLONG:  return test_ll_get(count);
+  case MYSQL_TYPE_DOUBLE:    return test_d_get(count);
+  }
+  return Stat();
+}
+
+
+Stat Item::test_native_new(ulonglong count)
+{
+  switch (field_type())
+  {
+  case MYSQL_TYPE_NULL:
+  case MYSQL_TYPE_BOOL:      return test_b_new(count);
+  case MYSQL_TYPE_LONGLONG:  return test_ll_new(count);
+  case MYSQL_TYPE_DOUBLE:    return test_d_new(count);
+  }
+  return Stat();
 }
