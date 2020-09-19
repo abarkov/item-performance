@@ -42,7 +42,7 @@ public:
   virtual ~Test() { }
   virtual const char *name() const = 0;
   virtual MethodStatByType run(ulonglong count) const = 0;
-  bool matches(const char *mask) const
+  virtual bool matches(const char *mask) const
   {
     size_t mask_length= strlen(mask);
     return !strncmp(mask, name(), mask_length);
@@ -588,6 +588,31 @@ public:
 };
 
 
+class Test_random: public Test
+{
+public:
+  const char *name() const override { return "random"; }
+  bool matches(const char *mask) const override
+  {
+    if (!Test::matches(mask))
+      return false;
+    const char *env= getenv("BIGTEST");
+    return env && atoi(env);
+  }
+  MethodStatByType run(ulonglong count) const override
+  {
+    std::pair<Item *, std::vector<std::unique_ptr<Item>>> g_random_tree=
+      generate_tree(10);
+    MethodStatByType st;
+    st+= test_b(g_random_tree.first, count);
+    st+= test_ll(g_random_tree.first, count);
+    st+= test_int32(g_random_tree.first, count);
+    st+= test_d(g_random_tree.first, count);
+
+    return st;
+  }
+};
+
 
 MethodStatByType run(const char *name, ulonglong count)
 {
@@ -608,6 +633,7 @@ MethodStatByType run(const char *name, ulonglong count)
   static const Test_double_plus       test_double_plus;
   static const Test_double_coalesce   test_double_coalesce;
   static const Test_double_last_value test_double_last_value;
+  static const Test_random            test_random;
 
   static const Test *tests[]=
   {
@@ -628,6 +654,7 @@ MethodStatByType run(const char *name, ulonglong count)
     &test_double_plus,
     &test_double_coalesce,
     &test_double_last_value,
+    &test_random,
     NULL
   };
 
