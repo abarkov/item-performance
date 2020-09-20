@@ -11,6 +11,7 @@ class Options
   uint m_used_options;
   uint m_verbose;
   bool m_error;
+  uint m_big_test;
   ulonglong m_count;
 
   void shift(int *ac, char ***av)
@@ -75,6 +76,7 @@ public:
     m_used_options(0),
     m_verbose(0),
     m_error(0),
+    m_big_test(0),
     m_count(10*1000*1000ULL)
   {
     shift(&ac, &av);
@@ -92,6 +94,8 @@ public:
     if (!strncmp(av, "-?", 2))             m_error= true;
     else if (!strncmp(av, "--verbose=", 10)) m_verbose= atoi(av+10);
     else if (!strncmp(av, "--verbose", 9)) m_verbose= 1;
+    else if (!strncmp(av, "--big-test=", 11)) m_big_test= atoi(av+11);
+    else if (!strncmp(av, "--big-test", 10)) m_big_test++;
     else if (!strncmp(av, "--help", 6))    m_error= true;
     else if (!strncmp(av, "--count=", 8))
     {
@@ -109,10 +113,20 @@ public:
   uint used_options() const { return m_used_options; }
   bool error() const { return m_error; }
   uint verbose() const { return m_verbose; }
+  uint big_test() const { return m_big_test; }
   ulonglong count() const { return m_count; }
   void usage() const
   {
-    printf("Usage:\n%s [--verbose[=val]] [--count=val] [test ...]\n", m_progname);
+    printf("\n");
+    printf("Usage:\n%s [option...] [test ...]\n", m_progname);
+    printf("\n");
+    printf("Options:\n");
+    printf("  --count=val       - run val iterations\n");
+    printf("  --big-test[=val]  - big tests:\n");
+    printf("                      0 - disabled\n");
+    printf("                      1 - enabled\n");
+    printf("                      2 - only big tests\n");
+    printf("\n");
   }
 };
 

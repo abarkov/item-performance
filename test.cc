@@ -39,15 +39,20 @@ void MethodStatByType::print() const
 
 class Test
 {
+protected:
+  bool name_matches(const char *mask) const
+  {
+    size_t mask_length= strlen(mask);
+    return !strncmp(mask, name(), mask_length);
+  }
 public:
   Test() { }
   virtual ~Test() { }
   virtual const char *name() const = 0;
-  virtual MethodStatByType run(ulonglong count) const = 0;
-  virtual bool matches(const char *mask) const
+  virtual MethodStatByType run(const Options &opt) const = 0;
+  virtual bool matches(const Options &opt, const char *mask) const
   {
-    size_t mask_length= strlen(mask);
-    return !strncmp(mask, name(), mask_length);
+    return opt.big_test() < 2 && name_matches(mask);
   }
   void print(Item *item, const Stat &st) const
   {
@@ -190,7 +195,7 @@ class Test_null_misc: public Test
 {
 public:
   const char *name() const override { return "null_misc"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null();                           // NULL
     Item *b0= new Item_bool(false);                      // FALSE
@@ -200,11 +205,11 @@ public:
     Item *coalesce_nl_nl= new Item_func_coalesce(nl,nl); // COALESCE(NULL,NULL)
 
     MethodStatByType st;
-    st+= test_b(nl, count);
-    st+= test_ll(nl, count);
-    st+= test_d(nl, count);
-    st+= test_b(coalesce_nl, count);
-    st+= test_b(coalesce_nl_nl, count);
+    st+= test_b(nl, opt.count());
+    st+= test_ll(nl, opt.count());
+    st+= test_d(nl, opt.count());
+    st+= test_b(coalesce_nl, opt.count());
+    st+= test_b(coalesce_nl_nl, opt.count());
 
     delete nl;
     delete b0;
@@ -221,7 +226,7 @@ class Test_bool_isnull: public Test
 {
 public:
   const char *name() const override { return "bool_isnull"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;                       // NULL
     Item *b0= new Item_bool(false);                // FALSE
@@ -240,7 +245,7 @@ public:
       isnull_d0,
       NULL
     };
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -249,12 +254,12 @@ class Test_bool_misc: public Test
 {
 public:
   const char *name() const override { return "bool_misc"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *b0= new Item_bool(false);                // FALSE
     Item *b1= new Item_bool(true);                 // TRUE
     Item *items[]= {b0, b1, NULL};
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -263,7 +268,7 @@ class Test_bool_eq: public Test
 {
 public:
   const char *name() const override { return "bool_eq"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_bool(false);
@@ -272,7 +277,7 @@ public:
     Item *cmp3= new Item_func_eq(b0, b0);
 
     Item *items[]= {cmp1, cmp2, cmp3, NULL};
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -281,7 +286,7 @@ class Test_bool_or: public Test
 {
 public:
   const char *name() const override { return "bool_or"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_bool(false);
@@ -313,7 +318,7 @@ public:
       or_b0_nl__b1,
       NULL
     };
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -322,7 +327,7 @@ class Test_bool_coalesce: public Test
 {
 public:
   const char *name() const override { return "bool_coalesce"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_bool(false);
@@ -330,7 +335,7 @@ public:
     Item *coalesce_nl_b0= new Item_func_coalesce(nl, b0); // COALESCE(NULL,FALSE)
  
     Item *items[]= {coalesce_b0, coalesce_nl_b0, NULL};
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -339,7 +344,7 @@ class Test_bool_last_value: public Test
 {
 public:
   const char *name() const override { return "bool_last_value"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_bool(false);
@@ -347,7 +352,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -356,14 +361,14 @@ class Test_ll_misc: public Test
 {
 public:
   const char *name() const override { return "ll_misc"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *ll0= new Item_int(x);                                   // INT
     Item *uminus_ll0= new Item_func_uminus(ll0);                  // -INT
     Item *uminus_uminus_ll0= new Item_func_uminus(uminus_ll0);    // -(-INT)
  
     Item *items[]= {ll0, uminus_ll0, uminus_uminus_ll0, NULL};
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -372,7 +377,7 @@ class Test_ll_plus: public Test
 {
 public:
   const char *name() const override { return "ll_plus"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;                              // NULL
     Item *ll0= new Item_int(x);                               // INT
@@ -396,7 +401,7 @@ public:
       add_ll_ll_ll_ll_ll0,
       NULL
     };
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -405,7 +410,7 @@ class Test_ll_coalesce: public Test
 {
 public:
   const char *name() const override { return "ll_coalesce"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;
     Item *ll0= new Item_int(x);
@@ -423,7 +428,7 @@ public:
       NULL
     };
 
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -432,7 +437,7 @@ class Test_ll_last_value: public Test
 {
 public:
   const char *name() const override { return "ll_last_value"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_int(x);
@@ -440,7 +445,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -449,7 +454,7 @@ class Test_ll_eq: public Test
 {
 public:
   const char *name() const override { return "ll_eq"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_int(x);
@@ -458,7 +463,7 @@ public:
     Item *cmp3= new Item_func_eq(b0, b0);
 
     Item *items[]= {cmp1, cmp2, cmp3, NULL};
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -467,7 +472,7 @@ class Test_double_misc: public Test
 {
 public:
   const char *name() const override { return "double_misc"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *d0= new Item_real(x);                                 // DBL
     Item *uminus_d0= new Item_func_uminus(d0);                 // -DBL
@@ -481,7 +486,7 @@ public:
       uminus_uminus_d0,
       NULL
     };
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -490,7 +495,7 @@ class Test_double_eq: public Test
 {
 public:
   const char *name() const override { return "double_eq"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;
     Item *b0= new Item_real(x);
@@ -499,7 +504,7 @@ public:
     Item *cmp3= new Item_func_eq(b0, b0);
 
     Item *items[]= {cmp1, cmp2, cmp3, NULL};
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -508,7 +513,7 @@ class Test_double_plus: public Test
 {
 public:
   const char *name() const override { return "double_plus"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null();
     Item *d0= new Item_real(x);
@@ -531,7 +536,7 @@ public:
       add_d_d_d_d_d,
       NULL
     };
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -540,7 +545,7 @@ class Test_double_coalesce: public Test
 {
 public:
   const char *name() const override { return "double_coalesce"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;
     Item *d0= new Item_real(x);
@@ -559,7 +564,7 @@ public:
       coalesce_nl_nl__d0,
       NULL
     };
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -568,7 +573,7 @@ class Test_double_last_value: public Test
 {
 public:
   const char *name() const override { return "double_last_value"; }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     Item *nl= new Item_null;
     Item *d0= new Item_real(x);
@@ -576,7 +581,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(d0, d0, d0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    return test_native(items, count);
+    return test_native(items, opt.count());
   }
 };
 
@@ -585,26 +590,23 @@ class Test_random: public Test
 {
 public:
   const char *name() const override { return "random"; }
-  bool matches(const char *mask) const override
+  bool matches(const Options &opt, const char *mask) const override
   {
-    if (!Test::matches(mask))
-      return false;
-    const char *env= getenv("BIGTEST");
-    return env && atoi(env);
+    return opt.big_test() > 0 && name_matches(mask);
   }
-  MethodStatByType run(ulonglong count) const override
+  MethodStatByType run(const Options &opt) const override
   {
     std::pair<Item *, std::vector<std::unique_ptr<Item>>> g_random_tree=
       generate_tree(10);
     MethodStatByType st;
-    st+= test_native(g_random_tree.first, count);
+    st+= test_native(g_random_tree.first, opt.count());
 
     return st;
   }
 };
 
 
-MethodStatByType run(const char *name, ulonglong count)
+MethodStatByType run(const char *name, const Options &opt)
 {
   static const Test_null_misc         test_null_misc;
   static const Test_bool_misc         test_bool_misc;
@@ -651,8 +653,8 @@ MethodStatByType run(const char *name, ulonglong count)
   MethodStatByType stt;
   for (uint i= 0; tests[i]; i++)
   {
-    if (tests[i]->matches(name))
-      stt+= tests[i]->run(count);
+    if (tests[i]->matches(opt, name))
+      stt+= tests[i]->run(opt);
   }
   return stt;
 }
@@ -671,14 +673,14 @@ int main(int argc, char **argv)
   MethodStatByType stt;
   if (opt.used_options() == (uint) argc) // Run all tests
   {
-    stt+= run("", opt.count());
+    stt+= run("", opt);
   }
   else           // Run specified tests
   {
     argv+= opt.used_options();
     argc-= opt.used_options();
     for (int i= 0; i < argc; i++)
-      stt+= run(argv[i], opt.count());
+      stt+= run(argv[i], opt);
   }
 
   printf("By type:\n");

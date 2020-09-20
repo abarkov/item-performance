@@ -17,6 +17,12 @@ cmake --build .
 ./gbench
 
 
+Available command line options:
+==============================
+To see available option lists, run:
+
+./test -?
+
 
 How to run tests
 ================
