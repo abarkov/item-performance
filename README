@@ -26,7 +26,7 @@ How to run tests
 
 - run all tests with the specified count:
 
-  COUNT=1000000 ./test
+  ./test --count=1000000
 
 - run some tests (specified by the mask) with the default count:
 
@@ -39,7 +39,7 @@ How to run tests
 
 - run some tests with the specified count:
 
-  COUNT=1000000 ./test ll
+  ./test --count=1000000 ll
 
 
 Description

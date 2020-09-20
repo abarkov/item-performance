@@ -4,6 +4,8 @@
 #include <sys/time.h>
 #include "timer.h"
 
+#include "opt.h"
+
 #include "item.h"
 #include "item_func.h"
 
@@ -658,18 +660,25 @@ MethodStatByType run(const char *name, ulonglong count)
 
 int main(int argc, char **argv)
 {
-  const char *ecount= getenv("COUNT");
-  ulonglong count= ecount ? (ulonglong) atoll(ecount) : default_count;
+  Options opt(argc, argv);
+
+  if (opt.error())
+  {
+    opt.usage();
+    return 1;
+  }
 
   MethodStatByType stt;
-  if (argc <= 1) // Run all tests
+  if (opt.used_options() == (uint) argc) // Run all tests
   {
-    stt+= run("", count);
+    stt+= run("", opt.count());
   }
   else           // Run specified tests
   {
-    for (int i= 1; i < argc; i++)
-      stt+= run(argv[i], count);
+    argv+= opt.used_options();
+    argc-= opt.used_options();
+    for (int i= 0; i < argc; i++)
+      stt+= run(argv[i], opt.count());
   }
 
   printf("By type:\n");

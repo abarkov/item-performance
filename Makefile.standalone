@@ -5,7 +5,7 @@ CXXFLAGS+=-O3 -g -Wall  -DHAVE_NULL_VALUE
 
 all: test
 
-INCLUDES=item.h item_func.h timer.h sql_type_double.h sql_type_int.h sql_type_bool.h vm.h
+INCLUDES=item.h item_func.h timer.h sql_type_double.h sql_type_int.h sql_type_bool.h vm.h opt.h
 
 test: test.o item_test.o item_func.o vm.o $(INCLUDES)
 	$(CXX) $(CXXFLAGS) test.o item_test.o item_func.o vm.o -o test -lstdc++
