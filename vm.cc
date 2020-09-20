@@ -35,6 +35,9 @@ void VM::exec_instr(const Instr &i)
   case NEG_D0:
     m_d0.neg();
     break;
+
+  case NOP:
+    break;
   }
 }
 
