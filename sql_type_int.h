@@ -1,6 +1,8 @@
 #ifndef SQL_TYPE_INT_H
 #define SQL_TYPE_INT_H
 
+#include <stdint.h>
+
 typedef int32_t int32;
 
 typedef long long longlong;
