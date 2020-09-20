@@ -1,7 +1,7 @@
 #include <cstddef>
 #include "vm.h"
 
-void VM::exec_instr(const Instr &i)
+inline void VM::exec_instr(const Instr &i)
 {
   switch (i.m_cmd) {
   case MOV_LL_TO_LL0:
