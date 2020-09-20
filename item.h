@@ -187,6 +187,7 @@ public:
   Stat test_ll_new(ulonglong count);
 
   Stat test_ll_vm(VM *vm, ulonglong count);
+  Stat test_d_vm(VM *vm, ulonglong count);
 };
 
 class Item_null: public Item

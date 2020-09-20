@@ -17,6 +17,12 @@ public:
     value= -value;
     return *this;
   }
+  Double_null & operator+=(const Double_null &other)
+  {
+    value+= other.value;
+    is_null|= other.is_null;
+    return *this;
+  }
 };
 
 #endif

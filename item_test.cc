@@ -29,6 +29,10 @@ Stat Item::test_b_old(ulonglong count)
 #ifdef HAVE_NULL_VALUE
 Stat Item::test_d_old(ulonglong count)
 {
+  VM vm;
+  if (!gen(&vm))
+    return test_d_vm(&vm, count);
+
   Stat st;
   Timer t0;
   for (ulonglong i= 0 ; i < count; i++)
@@ -316,6 +320,23 @@ Stat Item::test_ll_vm(VM *vm, ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "vm_longlong";
+  return st;
+}
+
+
+Stat Item::test_d_vm(VM *vm, ulonglong count)
+{
+  Stat st;
+  Timer t0;
+  for (ulonglong i= 0 ; i < count; i++)
+  {
+    vm->exec();
+    if (!vm->m_d0.is_null)
+      st.sum_d+= vm->m_d0.value;
+  }
+  st.time_spent= Timer().diff(t0);
+  st.method= "vm_double";
+  st.use_sum_d= true;
   return st;
 }
 
