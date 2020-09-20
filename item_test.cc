@@ -57,8 +57,8 @@ Stat Item::test_ll_old(ulonglong count)
       (ib= dynamic_cast<Item_int*>(add->arguments()[1])))
   {
     VM vm;
-    vm.add(VM::Instr(VM::MOV_LL_TO_LL0, ia->to_longlong_null()));
-    vm.add(VM::Instr(VM::ADD_LL0_LLI, ib->to_longlong_null()));
+    vm.push_back(VM::Instr(VM::MOV_LL_TO_LL0, ia->to_longlong_null()));
+    vm.push_back(VM::Instr(VM::ADD_LL0_LLI, ib->to_longlong_null()));
     Stat st;
     Timer t0;
     for (ulonglong i= 0 ; i < count; i++)

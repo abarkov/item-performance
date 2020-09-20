@@ -22,6 +22,6 @@ void VM::exec_instr(const Instr &i)
 
 void VM::exec()
 {
-  for (size_t i= 0; i < m_instr_count; i++)
-    exec_instr(m_instr[i]);
+  for (Instr i: m_instr)
+    exec_instr(i);
 }

@@ -1,6 +1,8 @@
 #ifndef VM_H_INCLUDED
 #define VM_H_INCLUDED
 
+#include <vector>
+
 #include "sql_type_bool.h"
 #include "sql_type_int.h"
 #include "sql_type_double.h"
@@ -31,18 +33,15 @@ public:
     { }
   };
 
-  Instr m_instr[100];
-  size_t m_instr_count;
+  std::vector<Instr> m_instr;
   Longlong_null m_ll0;
   Longlong_null m_ll1;
 
-  VM() :m_instr_count(0) { }
+  VM() { }
   void exec_instr(const Instr &i);
-  bool add(const Instr &instr)
+  void push_back(const Instr &instr)
   {
-    m_instr[m_instr_count]= instr;
-    m_instr_count++;
-    return false;
+    m_instr.push_back(instr);
   }
   void exec();
 };
