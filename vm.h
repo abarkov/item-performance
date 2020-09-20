@@ -16,11 +16,13 @@ public:
     MOV_LL_TO_LL1, // Move Longlong_null constant to register LL1
     ADD_LL0_LL1,   // LL0+= LL1
     ADD_LL0_LLI,   // LL0+= Instr.m_param_ll
+    NEG_LL0,       // LL0= -LL0
 
     MOV_D_TO_D0,   // Move Longlong_null constant to register LL0
     MOV_D_TO_D1,   // Move Longlong_null constant to register LL1
     ADD_D0_D1,     // LL0+= LL1
     ADD_D0_DI,     // LL0+= Instr.m_param_ll
+    NEG_D0,        // D0= -D0
   };
   class Instr
   {

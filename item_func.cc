@@ -278,6 +278,27 @@ bool Item_cond_or::get_double(double *to)
 }
 
 
+bool Item_func_uminus::gen(VM *vm)
+{
+  if (dynamic_cast<Item_int*>(args[0]))
+  {
+    vm->push_back(VM::Instr(VM::MOV_LL_TO_LL0, args[0]->to_longlong_null()));
+    vm->push_back(VM::Instr(VM::NEG_LL0));
+    return false;
+  }
+
+  if (dynamic_cast<Item_real*>(args[0]))
+  {
+    vm->push_back(VM::Instr(VM::MOV_D_TO_D0, args[0]->to_double_null()));
+    vm->push_back(VM::Instr(VM::NEG_D0));
+    return false;
+  }
+
+  return true;
+}
+
+
+
 bool Item_func_uminus::val_bool_null(bool *null_value_arg)
 {
   return (bool) Item_func_uminus::val_real_null(null_value_arg);

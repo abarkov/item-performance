@@ -155,6 +155,7 @@ class Item_func_uminus: public Item_hybrid_func
 public:
   Item_func_uminus(Item *a): Item_hybrid_func(a) { }
   void print(string *to) override;
+  bool gen(VM *to) override;
 #ifdef HAVE_NULL_VALUE
   bool val_bool() override;
   double val_real() override;
