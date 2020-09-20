@@ -1,4 +1,6 @@
+*~
 item_func.o
 item_test.o
 test
 test.o
+vm.o
