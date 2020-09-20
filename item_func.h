@@ -81,6 +81,8 @@ class Item_func_add: public Item_hybrid_func
 public:
   Item_func_add(Item *a, Item *b) :Item_hybrid_func(a,b) { }
   void print(string *to) override;
+  bool gen(VM *to) override;
+
 #ifdef HAVE_NULL_VALUE
   bool val_bool() override;
   double val_real() override;

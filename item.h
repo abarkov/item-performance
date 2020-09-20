@@ -14,6 +14,8 @@
 #include "sql_type_double.h"
 #include "sql_type_int.h"
 
+#include "vm.h"
+
 using namespace std;
 
 
@@ -147,6 +149,8 @@ public:
 
   virtual void print(string *to)= 0;
 
+  virtual bool gen(VM *to) { return true; }
+
   virtual bool val_bool_null(bool *null_value_arg)= 0;
   virtual longlong val_int_null(bool *null_value_arg)= 0;
   virtual int32 val_int32_null(bool *null_value_arg)= 0;
@@ -181,6 +185,8 @@ public:
   Stat test_ll_prm(ulonglong count);
   Stat test_ll_get(ulonglong count);
   Stat test_ll_new(ulonglong count);
+
+  Stat test_ll_vm(VM *vm, ulonglong count);
 };
 
 class Item_null: public Item

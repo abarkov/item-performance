@@ -54,6 +54,22 @@ void Item_cond_or::print(string *to)
 }
 
 
+bool Item_func_add::gen(VM *vm)
+{
+  Item_int *ia, *ib;
+
+  if (arg_count == 2 &&
+      (ia= dynamic_cast<Item_int*>(args[0])) &&
+      (ib= dynamic_cast<Item_int*>(args[1])))
+  {
+    vm->push_back(VM::Instr(VM::MOV_LL_TO_LL0, ia->to_longlong_null()));
+    vm->push_back(VM::Instr(VM::ADD_LL0_LLI, ib->to_longlong_null()));
+    return false;
+  }
+  return true;
+}
+
+
 #ifdef HAVE_NULL_VALUE
 bool Item_func_add::val_bool()
 {

@@ -49,28 +49,10 @@ Stat Item::test_d_old(ulonglong count)
 
 Stat Item::test_ll_old(ulonglong count)
 {
-  Item_func_add *add;
-  Item_int *ia, *ib;
-  if ((add= dynamic_cast<Item_func_add*>(this)) &&
-      add->argument_count() == 2 &&
-      (ia= dynamic_cast<Item_int*>(add->arguments()[0])) &&
-      (ib= dynamic_cast<Item_int*>(add->arguments()[1])))
-  {
-    VM vm;
-    vm.push_back(VM::Instr(VM::MOV_LL_TO_LL0, ia->to_longlong_null()));
-    vm.push_back(VM::Instr(VM::ADD_LL0_LLI, ib->to_longlong_null()));
-    Stat st;
-    Timer t0;
-    for (ulonglong i= 0 ; i < count; i++)
-    {
-      vm.exec();
-      if (!vm.m_ll0.is_null)
-        st.sum_ll+= vm.m_ll0.value;
-    }
-    st.time_spent= Timer().diff(t0);
-    st.method= "vm";
-    return st;
-  }
+  VM vm;
+  if (!gen(&vm))
+    return test_ll_vm(&vm, count);
+
   Stat st;
   Timer t0;
   for (ulonglong i= 0 ; i < count; i++)
@@ -316,6 +298,24 @@ Stat Item::test_int32_new(ulonglong count)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "to_int32_null";
+  return st;
+}
+
+
+/********************************************************/
+
+Stat Item::test_ll_vm(VM *vm, ulonglong count)
+{
+  Stat st;
+  Timer t0;
+  for (ulonglong i= 0 ; i < count; i++)
+  {
+    vm->exec();
+    if (!vm->m_ll0.is_null)
+      st.sum_ll+= vm->m_ll0.value;
+  }
+  st.time_spent= Timer().diff(t0);
+  st.method= "vm_longlong";
   return st;
 }
 
