@@ -4,6 +4,7 @@
 
 #include "item.h"
 #include "item_func.h"
+#include "variant.hpp"
 
 namespace
 {
@@ -187,6 +188,49 @@ TEST_SET(Item_func_coalesce_bool, g_coalesce_bool);
 std::pair<Item *, std::vector<std::unique_ptr<Item>>> g_random_tree=
     generate_tree(40);
 TEST_SET(Item_random_tree, g_random_tree.first);
+
+#define VARIANT_TEST_SET(NAME, ITEM)                                           \
+  void BM_variant_##NAME##_to_bool_null(benchmark::State &state)               \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+      to_bool_null(ITEM);                                                      \
+  }                                                                            \
+  BENCHMARK(BM_variant_##NAME##_to_bool_null);                                 \
+                                                                               \
+  void BM_variant_##NAME##_to_longlong_null(benchmark::State &state)           \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+      to_longlong_null(ITEM);                                                  \
+  }                                                                            \
+  BENCHMARK(BM_variant_##NAME##_to_longlong_null);                             \
+                                                                               \
+  void BM_variant_##NAME##_to_int32_null(benchmark::State &state)              \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+      to_int32_null(ITEM);                                                     \
+  }                                                                            \
+  BENCHMARK(BM_variant_##NAME##_to_int32_null);                                \
+                                                                               \
+  void BM_variant_##NAME##_to_double_null(benchmark::State &state)             \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+      to_double_null(ITEM);                                                    \
+  }                                                                            \
+  BENCHMARK(BM_variant_##NAME##_to_double_null);
+
+namespace variant
+{
+::variant::Item g_int1{0x77};
+::variant::Item g_int2{0x77};
+::variant::Item g_uminus= ::variant::Item_func_uminus(&g_int1);
+::variant::Item g_isnull= ::variant::Item_func_isnull(&g_int1);
+::variant::Item g_add= ::variant::Item_func_add(&g_uminus, &g_isnull);
+
+VARIANT_TEST_SET(Item_int, g_int1);
+VARIANT_TEST_SET(Item_func_uminus, g_uminus);
+VARIANT_TEST_SET(Item_func_isnull, g_isnull);
+VARIANT_TEST_SET(Item_func_add, g_add);
+} // namespace variant
 
 } // namespace
 

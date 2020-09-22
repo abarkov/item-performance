@@ -1365,3 +1365,79 @@ Item *generate_node(size_t depth_left,
 
   return node;
 }
+
+namespace variant
+{
+
+Bool_null Item_func_add::to_bool_null()
+{
+  Double_null nr= Item_func_add::to_double_null();
+  return Bool_null((bool)nr.value, nr.is_null);
+}
+
+Longlong_null Item_func_add::to_longlong_null()
+{
+  const Longlong_null nr0= variant::to_longlong_null(*args[0]);
+  if (nr0.is_null)
+    return nr0;
+  const Longlong_null nr1= variant::to_longlong_null(*args[1]);
+  return Longlong_null(nr0.value + nr1.value, nr1.is_null);
+}
+
+Int32_null Item_func_add::to_int32_null()
+{
+  const Int32_null nr0= variant::to_int32_null(*args[0]);
+  if (nr0.is_null)
+    return nr0;
+  const Int32_null nr1= variant::to_int32_null(*args[1]);
+  return Int32_null(nr0.value + nr1.value, nr1.is_null);
+}
+
+Double_null Item_func_add::to_double_null()
+{
+  const Double_null nr0= variant::to_double_null(*args[0]);
+  if (nr0.is_null)
+    return nr0;
+  const Double_null nr1= variant::to_double_null(*args[1]);
+  return Double_null(nr0.value + nr1.value, nr1.is_null);
+}
+
+Bool_null Item_func_uminus::to_bool_null()
+{
+  Double_null nr= Item_func_uminus::to_double_null();
+  return Bool_null((bool)nr.value, nr.is_null);
+}
+
+Longlong_null Item_func_uminus::to_longlong_null()
+{
+  return variant::to_longlong_null(*args[0]);
+}
+
+Int32_null Item_func_uminus::to_int32_null()
+{
+  return variant::to_int32_null(*args[0]);
+}
+
+Double_null Item_func_uminus::to_double_null()
+{
+  return variant::to_double_null(*args[0]);
+}
+
+Bool_null Item_func_isnull::to_bool_null()
+{
+  switch (m_arg0_field_type)
+  {
+  case MYSQL_TYPE_NULL:
+    return Bool_null(true);
+  case MYSQL_TYPE_BOOL:
+    return Bool_null(variant::to_bool_null(*args[0]).is_null);
+  case MYSQL_TYPE_LONGLONG:
+    return Bool_null(variant::to_longlong_null(*args[0]).is_null);
+  case MYSQL_TYPE_DOUBLE:
+    return Bool_null(variant::to_double_null(*args[0]).is_null);
+  }
+  assert(0);
+  return Bool_null(true);
+}
+
+} // namespace variant

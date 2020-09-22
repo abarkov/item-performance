@@ -8,6 +8,8 @@
 #include <vector>
 #include <memory>
 
+#include "variant.hpp"
+
 #include "mysql_com.h"
 
 #include "sql_type_bool.h"
@@ -567,5 +569,172 @@ generate_tree(size_t max_depth)
   assert(!storage.empty());
   return {root, std::move(storage)};
 }
+
+namespace variant
+{
+
+struct Item_int;
+struct Item_func_uminus;
+struct Item_func_isnull;
+struct Item_func_add;
+
+using Item= mpark::variant<Item_int, Item_func_uminus, Item_func_isnull, Item_func_add>;
+
+struct Item_int
+{
+  longlong val;
+
+  Item_int(longlong val) : val(val) {}
+
+  enum_field_types field_type() const { return MYSQL_TYPE_LONGLONG; }
+
+  Bool_null to_bool_null() { return Bool_null(static_cast<bool>(val)); }
+  Longlong_null to_longlong_null() { return Longlong_null(val); }
+  Int32_null to_int32_null() { return Int32_null(static_cast<int32>(val)); }
+  Double_null to_double_null() { return Double_null(val); }
+};
+
+struct Item_func
+{
+  Item *args[3];
+  uint arg_count;
+  Item_func(Item *a) : args{a, nullptr, nullptr}, arg_count(1) {}
+  Item_func(Item *a, Item *b) : args{a, b, nullptr}, arg_count(2) {}
+  Item_func(Item *a, Item *b, Item *c) : args{a, b, c}, arg_count(3) {}
+
+  uint argument_count() const { return arg_count; }
+  Item **arguments() { return args; }
+};
+
+struct Hybrid_field_type
+{
+  enum_field_types m_field_type;
+
+  Hybrid_field_type(enum_field_types t) : m_field_type(t) {}
+  Hybrid_field_type(enum_field_types ta, enum_field_types tb)
+  {
+    if (ta == tb)
+      m_field_type= ta;
+    else if (ta == MYSQL_TYPE_NULL || tb == MYSQL_TYPE_NULL)
+      m_field_type= std::max(ta, tb);
+    else if (ta == MYSQL_TYPE_DOUBLE || tb == MYSQL_TYPE_DOUBLE)
+      m_field_type= MYSQL_TYPE_DOUBLE;
+    else
+      m_field_type= MYSQL_TYPE_LONGLONG;
+  }
+  Hybrid_field_type(enum_field_types ta, enum_field_types tb,
+                    enum_field_types tc)
+      : Hybrid_field_type(Hybrid_field_type(ta, tb).m_field_type, tc)
+  {
+  }
+};
+
+struct Item_hybrid_func : Item_func, Hybrid_field_type
+{
+  inline Item_hybrid_func(Item *a);
+  inline Item_hybrid_func(Item *a, Item *b);
+  inline Item_hybrid_func(Item *a, Item *b, Item *c);
+};
+
+struct Item_func_add : Item_hybrid_func
+{
+  Item_func_add(Item *a, Item *b) : Item_hybrid_func(a, b) {}
+
+  enum_field_types field_type() const { return m_field_type; }
+
+  Bool_null to_bool_null();
+  Longlong_null to_longlong_null();
+  Int32_null to_int32_null();
+  Double_null to_double_null();
+};
+
+struct Item_func_uminus : Item_hybrid_func
+{
+  Item_func_uminus(Item *a) : Item_hybrid_func(a) {}
+
+  enum_field_types field_type() const { return m_field_type; }
+
+  Bool_null to_bool_null();
+  Longlong_null to_longlong_null();
+  Int32_null to_int32_null();
+  Double_null to_double_null();
+};
+
+struct Item_func_isnull : Item_func
+{
+  enum_field_types m_arg0_field_type;
+
+  inline Item_func_isnull(Item *a);
+
+  enum_field_types field_type() const { return MYSQL_TYPE_BOOL; }
+
+  Bool_null to_bool_null();
+
+  Longlong_null to_longlong_null()
+  {
+    Bool_null val= Item_func_isnull::to_bool_null();
+    return Longlong_null(val.value, val.is_null);
+  }
+
+  Int32_null to_int32_null()
+  {
+    Bool_null val= Item_func_isnull::to_bool_null();
+    return Int32_null(val.value, val.is_null);
+  }
+
+  Double_null to_double_null()
+  {
+    Bool_null val= Item_func_isnull::to_bool_null();
+    return Double_null(val.value, val.is_null);
+  }
+};
+
+static inline enum_field_types field_type(Item &item)
+{
+  return mpark::visit([](auto &&arg) { return arg.field_type(); }, item);
+};
+
+static inline Bool_null to_bool_null(Item &item)
+{
+  return mpark::visit([](auto &&arg) { return arg.to_bool_null(); }, item);
+};
+
+static inline Longlong_null to_longlong_null(Item &item)
+{
+  return mpark::visit([](auto &&arg) { return arg.to_longlong_null(); }, item);
+};
+
+static inline Int32_null to_int32_null(Item &item)
+{
+  return mpark::visit([](auto &&arg) { return arg.to_int32_null(); }, item);
+};
+
+static inline Double_null to_double_null(Item &item)
+{
+  return mpark::visit([](auto &&arg) { return arg.to_double_null(); }, item);
+};
+
+Item_hybrid_func::Item_hybrid_func(Item *a)
+    : Item_func(a), Hybrid_field_type(field_type(*a))
+{
+}
+
+Item_hybrid_func::Item_hybrid_func(Item *a, Item *b)
+    : Item_func(a, b), Hybrid_field_type(field_type(*a), field_type(*b))
+{
+}
+
+Item_hybrid_func::Item_hybrid_func(Item *a, Item *b, Item *c)
+    : Item_func(a, b, c),
+      Hybrid_field_type(field_type(*a), field_type(*b), field_type(*c))
+{
+}
+
+Item_func_isnull::Item_func_isnull(Item *a)
+    : Item_func(a), m_arg0_field_type(variant::field_type(*a))
+{
+}
+
+} // namespace variant
 
 #endif
