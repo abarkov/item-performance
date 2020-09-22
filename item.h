@@ -14,6 +14,8 @@
 #include "sql_type_double.h"
 #include "sql_type_int.h"
 
+#include "opt.h"
+
 #include "vm.h"
 
 using namespace std;
@@ -137,11 +139,11 @@ public:
   virtual double val_real()= 0;
   virtual longlong val_int()= 0;
   virtual int32 val_int32()= 0;
-  Stat test_b_old(ulonglong count);
-  Stat test_d_old(ulonglong count);
-  Stat test_int32_old(ulonglong count);
-  Stat test_ll_old(ulonglong count);
-  Stat test_native_old(ulonglong count);
+  Stat test_b_old(const Options &opt);
+  Stat test_d_old(const Options &opt);
+  Stat test_int32_old(const Options &opt);
+  Stat test_ll_old(const Options &opt);
+  Stat test_native_old(const Options &opt);
 #endif
   virtual ~Item() { }
 
@@ -166,28 +168,28 @@ public:
   virtual Int32_null to_int32_null()= 0;
   virtual Double_null to_double_null()= 0;
 
-  Stat test_native_prm(ulonglong count);
-  Stat test_native_get(ulonglong count);
-  Stat test_native_new(ulonglong count);
+  Stat test_native_prm(const Options &opt);
+  Stat test_native_get(const Options &opt);
+  Stat test_native_new(const Options &opt);
 
-  Stat test_b_prm(ulonglong count);
-  Stat test_b_get(ulonglong count);
-  Stat test_b_new(ulonglong count);
+  Stat test_b_prm(const Options &opt);
+  Stat test_b_get(const Options &opt);
+  Stat test_b_new(const Options &opt);
 
-  Stat test_d_prm(ulonglong count);
-  Stat test_d_get(ulonglong count);
-  Stat test_d_new(ulonglong count);
+  Stat test_d_prm(const Options &opt);
+  Stat test_d_get(const Options &opt);
+  Stat test_d_new(const Options &opt);
 
-  Stat test_int32_prm(ulonglong count);
-  Stat test_int32_get(ulonglong count);
-  Stat test_int32_new(ulonglong count);
+  Stat test_int32_prm(const Options &opt);
+  Stat test_int32_get(const Options &opt);
+  Stat test_int32_new(const Options &opt);
 
-  Stat test_ll_prm(ulonglong count);
-  Stat test_ll_get(ulonglong count);
-  Stat test_ll_new(ulonglong count);
+  Stat test_ll_prm(const Options &opt);
+  Stat test_ll_get(const Options &opt);
+  Stat test_ll_new(const Options &opt);
 
-  Stat test_ll_vm(VM *vm, ulonglong count);
-  Stat test_d_vm(VM *vm, ulonglong count);
+  Stat test_ll_vm(VM *vm, const Options &opt);
+  Stat test_d_vm(VM *vm, const Options &opt);
 };
 
 class Item_null: public Item

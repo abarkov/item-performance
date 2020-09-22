@@ -18,7 +18,7 @@ volatile int y= 2;
 void MethodStat::print(const char *method) const
 {
   size_t length= strlen(method);
-  size_t space_count= length < 9 ? 9 - length : 0;
+  int space_count= length < 9 ? (int) (9 - length) : 0;
   const char *sp="";
   printf("val_%s        %-*s%f\n", method, space_count, "", val_xxx);
   printf("val_%s_null   %-*s%f\n", method, space_count, "", val_xxx_null);
@@ -76,17 +76,17 @@ public:
   }
 
 
-  MethodStatByType test_b(Item *item, ulonglong count) const
+  MethodStatByType test_b(Item *item, const Options &opt) const
   {
     StatAll st(
 #ifdef HAVE_NULL_VALUE
-      item->test_b_old(count),
+      item->test_b_old(opt),
 #else
       Stat(),
 #endif
-      item->test_b_prm(count),
-      item->test_b_get(count),
-      item->test_b_new(count));
+      item->test_b_prm(opt),
+      item->test_b_get(opt),
+      item->test_b_new(opt));
     print(item, st);
     printf("\n");
     MethodStatByType stt;
@@ -94,17 +94,17 @@ public:
     return stt;
   }
 
-  MethodStatByType test_d(Item *item, ulonglong count) const
+  MethodStatByType test_d(Item *item, const Options &opt) const
   {
     StatAll st(
 #ifdef HAVE_NULL_VALUE
-      item->test_d_old(count),
+      item->test_d_old(opt),
 #else
       Stat(),
 #endif
-      item->test_d_prm(count),
-      item->test_d_get(count),
-      item->test_d_new(count));
+      item->test_d_prm(opt),
+      item->test_d_get(opt),
+      item->test_d_new(opt));
     print(item, st);
     printf("\n");
     MethodStatByType stt;
@@ -112,39 +112,39 @@ public:
     return stt;
   }
 
-  MethodStatByType test_int32(Item *item, ulonglong count) const
+  MethodStatByType test_int32(Item *item, const Options &opt) const
   {
     StatAll st(
 #ifdef HAVE_NULL_VALUE
-      item->test_int32_old(count),
+      item->test_int32_old(opt),
 #else
       Stat(),
 #endif
-      item->test_int32_prm(count),
-      item->test_int32_get(count),
-      item->test_int32_new(count));
+      item->test_int32_prm(opt),
+      item->test_int32_get(opt),
+      item->test_int32_new(opt));
     print(item, st);
     MethodStatByType stt;
     stt.st_int32+= MethodStat(st);
     return stt;
   }
 
-  MethodStatByType test_ll(Item *item, ulonglong count) const
+  MethodStatByType test_ll(Item *item, const Options &opt) const
   {
     MethodStatByType stt;
     const char *eint32= getenv("INT32");
     if (eint32 && atoi(eint32))
-      stt+= test_int32(item, count);
+      stt+= test_int32(item, opt);
 
     StatAll st(
 #ifdef HAVE_NULL_VALUE
-      item->test_ll_old(count),
+      item->test_ll_old(opt),
 #else
       Stat(),
 #endif
-      item->test_ll_prm(count),
-      item->test_ll_get(count),
-      item->test_ll_new(count));
+      item->test_ll_prm(opt),
+      item->test_ll_get(opt),
+      item->test_ll_new(opt));
     print(item, st);
     stt.st_longlong+= MethodStat(st);
     printf("\n");
@@ -152,17 +152,17 @@ public:
     return stt;
   }
 
-  MethodStatByType test_native(Item *item, ulonglong count) const
+  MethodStatByType test_native(Item *item, const Options &opt) const
   {
     StatAll st(
 #ifdef HAVE_NULL_VALUE
-      item->test_native_old(count),
+      item->test_native_old(opt),
 #else
       Stat(),
 #endif
-      item->test_native_prm(count),
-      item->test_native_get(count),
-      item->test_native_new(count));
+      item->test_native_prm(opt),
+      item->test_native_get(opt),
+      item->test_native_new(opt));
     print(item, st);
     printf("\n");
     MethodStatByType stt;
@@ -181,11 +181,11 @@ public:
     return stt;
   }
 
-  MethodStatByType test_native(Item **items, ulonglong count) const
+  MethodStatByType test_native(Item **items, const Options &opt) const
   {
     MethodStatByType st;
     for (uint i= 0; items[i]; i++)
-      st+= test_native(items[i], count);
+      st+= test_native(items[i], opt);
     return st;
   }
 };
@@ -205,11 +205,11 @@ public:
     Item *coalesce_nl_nl= new Item_func_coalesce(nl,nl); // COALESCE(NULL,NULL)
 
     MethodStatByType st;
-    st+= test_b(nl, opt.count());
-    st+= test_ll(nl, opt.count());
-    st+= test_d(nl, opt.count());
-    st+= test_b(coalesce_nl, opt.count());
-    st+= test_b(coalesce_nl_nl, opt.count());
+    st+= test_b(nl, opt);
+    st+= test_ll(nl, opt);
+    st+= test_d(nl, opt);
+    st+= test_b(coalesce_nl, opt);
+    st+= test_b(coalesce_nl_nl, opt);
 
     delete nl;
     delete b0;
@@ -245,7 +245,7 @@ public:
       isnull_d0,
       NULL
     };
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -259,7 +259,7 @@ public:
     Item *b0= new Item_bool(false);                // FALSE
     Item *b1= new Item_bool(true);                 // TRUE
     Item *items[]= {b0, b1, NULL};
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -277,7 +277,7 @@ public:
     Item *cmp3= new Item_func_eq(b0, b0);
 
     Item *items[]= {cmp1, cmp2, cmp3, NULL};
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -318,7 +318,7 @@ public:
       or_b0_nl__b1,
       NULL
     };
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -335,7 +335,7 @@ public:
     Item *coalesce_nl_b0= new Item_func_coalesce(nl, b0); // COALESCE(NULL,FALSE)
  
     Item *items[]= {coalesce_b0, coalesce_nl_b0, NULL};
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -352,7 +352,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -368,7 +368,7 @@ public:
     Item *uminus_uminus_ll0= new Item_func_uminus(uminus_ll0);    // -(-INT)
  
     Item *items[]= {ll0, uminus_ll0, uminus_uminus_ll0, NULL};
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -401,7 +401,7 @@ public:
       add_ll_ll_ll_ll_ll0,
       NULL
     };
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -428,7 +428,7 @@ public:
       NULL
     };
 
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -445,7 +445,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -463,7 +463,7 @@ public:
     Item *cmp3= new Item_func_eq(b0, b0);
 
     Item *items[]= {cmp1, cmp2, cmp3, NULL};
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -486,7 +486,7 @@ public:
       uminus_uminus_d0,
       NULL
     };
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -504,7 +504,7 @@ public:
     Item *cmp3= new Item_func_eq(b0, b0);
 
     Item *items[]= {cmp1, cmp2, cmp3, NULL};
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -536,7 +536,7 @@ public:
       add_d_d_d_d_d,
       NULL
     };
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -564,7 +564,7 @@ public:
       coalesce_nl_nl__d0,
       NULL
     };
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -581,7 +581,7 @@ public:
     Item *lv_b0_b0_b0= new Item_func_last_value(d0, d0, d0);
  
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
-    return test_native(items, opt.count());
+    return test_native(items, opt);
   }
 };
 
@@ -599,7 +599,7 @@ public:
     std::pair<Item *, std::vector<std::unique_ptr<Item>>> g_random_tree=
       generate_tree(10);
     MethodStatByType st;
-    st+= test_native(g_random_tree.first, opt.count());
+    st+= test_native(g_random_tree.first, opt);
 
     return st;
   }

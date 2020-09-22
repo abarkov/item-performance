@@ -9,11 +9,11 @@
 #include "vm.h"
 
 #ifdef HAVE_NULL_VALUE
-Stat Item::test_b_old(ulonglong count)
+Stat Item::test_b_old(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     bool b= val_bool();
     if (!null_value)
@@ -27,15 +27,17 @@ Stat Item::test_b_old(ulonglong count)
 
 
 #ifdef HAVE_NULL_VALUE
-Stat Item::test_d_old(ulonglong count)
+Stat Item::test_d_old(const Options &opt)
 {
-  VM vm;
-  if (!gen(&vm))
-    return test_d_vm(&vm, count);
-
+  if (opt.vm())
+  {
+    VM vm;
+    if (!gen(&vm))
+      return test_d_vm(&vm, opt);
+  }
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     double dbl= val_real();
     if (!null_value)
@@ -51,15 +53,17 @@ Stat Item::test_d_old(ulonglong count)
 
 #ifdef HAVE_NULL_VALUE
 
-Stat Item::test_ll_old(ulonglong count)
+Stat Item::test_ll_old(const Options &opt)
 {
-  VM vm;
-  if (!gen(&vm))
-    return test_ll_vm(&vm, count);
-
+  if (opt.vm())
+  {
+    VM vm;
+    if (!gen(&vm))
+      return test_ll_vm(&vm, opt);
+  }
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     longlong tmp= val_int();
     if (!null_value)
@@ -73,11 +77,11 @@ Stat Item::test_ll_old(ulonglong count)
 
 
 #ifdef HAVE_NULL_VALUE
-Stat Item::test_int32_old(ulonglong count)
+Stat Item::test_int32_old(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     int32 tmp= val_int32();
     if (!null_value)
@@ -91,14 +95,14 @@ Stat Item::test_int32_old(ulonglong count)
 
 
 #ifdef HAVE_NULL_VALUE
-Stat Item::test_native_old(ulonglong count)
+Stat Item::test_native_old(const Options &opt)
 {
   switch (field_type())
   {
   case MYSQL_TYPE_NULL:
-  case MYSQL_TYPE_BOOL:      return test_b_old(count);
-  case MYSQL_TYPE_LONGLONG:  return test_ll_old(count);
-  case MYSQL_TYPE_DOUBLE:    return test_d_old(count);
+  case MYSQL_TYPE_BOOL:      return test_b_old(opt);
+  case MYSQL_TYPE_LONGLONG:  return test_ll_old(opt);
+  case MYSQL_TYPE_DOUBLE:    return test_d_old(opt);
   }
   return Stat();
 }
@@ -106,11 +110,11 @@ Stat Item::test_native_old(ulonglong count)
 
 
 
-Stat Item::test_b_prm(ulonglong count)
+Stat Item::test_b_prm(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     bool tmp_null_value;
     bool b= val_bool_null(&tmp_null_value);
@@ -123,11 +127,11 @@ Stat Item::test_b_prm(ulonglong count)
 }
 
 
-Stat Item::test_b_get(ulonglong count)
+Stat Item::test_b_get(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     bool tmp;
     if (!get_bool(&tmp))
@@ -140,11 +144,11 @@ Stat Item::test_b_get(ulonglong count)
 
 
 
-Stat Item::test_d_prm(ulonglong count)
+Stat Item::test_d_prm(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     bool tmp_null_value;
     double dbl= val_real_null(&tmp_null_value);
@@ -158,11 +162,11 @@ Stat Item::test_d_prm(ulonglong count)
 }
 
 
-Stat Item::test_d_get(ulonglong count)
+Stat Item::test_d_get(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     double tmp;
     if (!get_double(&tmp))
@@ -175,11 +179,11 @@ Stat Item::test_d_get(ulonglong count)
 }
 
 
-Stat Item::test_ll_prm(ulonglong count)
+Stat Item::test_ll_prm(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     bool tmp_null_value;
     longlong tmp= val_int_null(&tmp_null_value);
@@ -192,11 +196,11 @@ Stat Item::test_ll_prm(ulonglong count)
 }
 
 
-Stat Item::test_int32_prm(ulonglong count)
+Stat Item::test_int32_prm(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     bool tmp_null_value;
     int32 tmp= val_int32_null(&tmp_null_value);
@@ -209,11 +213,11 @@ Stat Item::test_int32_prm(ulonglong count)
 }
 
 
-Stat Item::test_ll_get(ulonglong count)
+Stat Item::test_ll_get(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     longlong tmp;
     if (!get_longlong(&tmp))
@@ -225,11 +229,11 @@ Stat Item::test_ll_get(ulonglong count)
 }
 
 
-Stat Item::test_int32_get(ulonglong count)
+Stat Item::test_int32_get(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     int32 tmp;
     if (!get_int32(&tmp))
@@ -241,11 +245,11 @@ Stat Item::test_int32_get(ulonglong count)
 }
 
 
-Stat Item::test_b_new(ulonglong count)
+Stat Item::test_b_new(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     Bool_null res= to_bool_null();
     if (!res.is_null)
@@ -257,11 +261,11 @@ Stat Item::test_b_new(ulonglong count)
 }
 
 
-Stat Item::test_d_new(ulonglong count)
+Stat Item::test_d_new(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     Double_null res= to_double_null();
     if (!res.is_null)
@@ -274,11 +278,11 @@ Stat Item::test_d_new(ulonglong count)
 }
 
 
-Stat Item::test_ll_new(ulonglong count)
+Stat Item::test_ll_new(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     Longlong_null res= to_longlong_null();
     if (!res.is_null)
@@ -290,11 +294,11 @@ Stat Item::test_ll_new(ulonglong count)
 }
 
 
-Stat Item::test_int32_new(ulonglong count)
+Stat Item::test_int32_new(const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     Int32_null res= to_int32_null();
     if (!res.is_null)
@@ -308,11 +312,11 @@ Stat Item::test_int32_new(ulonglong count)
 
 /********************************************************/
 
-Stat Item::test_ll_vm(VM *vm, ulonglong count)
+Stat Item::test_ll_vm(VM *vm, const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     vm->exec();
     if (!vm->m_ll0.is_null)
@@ -324,11 +328,11 @@ Stat Item::test_ll_vm(VM *vm, ulonglong count)
 }
 
 
-Stat Item::test_d_vm(VM *vm, ulonglong count)
+Stat Item::test_d_vm(VM *vm, const Options &opt)
 {
   Stat st;
   Timer t0;
-  for (ulonglong i= 0 ; i < count; i++)
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     vm->exec();
     if (!vm->m_d0.is_null)
@@ -343,40 +347,40 @@ Stat Item::test_d_vm(VM *vm, ulonglong count)
 
 /***************************************************/
 
-Stat Item::test_native_prm(ulonglong count)
+Stat Item::test_native_prm(const Options &opt)
 {
   switch (field_type())
   {
   case MYSQL_TYPE_NULL:
-  case MYSQL_TYPE_BOOL:      return test_b_prm(count);
-  case MYSQL_TYPE_LONGLONG:  return test_ll_prm(count);
-  case MYSQL_TYPE_DOUBLE:    return test_d_prm(count);
+  case MYSQL_TYPE_BOOL:      return test_b_prm(opt);
+  case MYSQL_TYPE_LONGLONG:  return test_ll_prm(opt);
+  case MYSQL_TYPE_DOUBLE:    return test_d_prm(opt);
   }
   return Stat();
 }
 
 
-Stat Item::test_native_get(ulonglong count)
+Stat Item::test_native_get(const Options &opt)
 {
   switch (field_type())
   {
   case MYSQL_TYPE_NULL:
-  case MYSQL_TYPE_BOOL:      return test_b_get(count);
-  case MYSQL_TYPE_LONGLONG:  return test_ll_get(count);
-  case MYSQL_TYPE_DOUBLE:    return test_d_get(count);
+  case MYSQL_TYPE_BOOL:      return test_b_get(opt);
+  case MYSQL_TYPE_LONGLONG:  return test_ll_get(opt);
+  case MYSQL_TYPE_DOUBLE:    return test_d_get(opt);
   }
   return Stat();
 }
 
 
-Stat Item::test_native_new(ulonglong count)
+Stat Item::test_native_new(const Options &opt)
 {
   switch (field_type())
   {
   case MYSQL_TYPE_NULL:
-  case MYSQL_TYPE_BOOL:      return test_b_new(count);
-  case MYSQL_TYPE_LONGLONG:  return test_ll_new(count);
-  case MYSQL_TYPE_DOUBLE:    return test_d_new(count);
+  case MYSQL_TYPE_BOOL:      return test_b_new(opt);
+  case MYSQL_TYPE_LONGLONG:  return test_ll_new(opt);
+  case MYSQL_TYPE_DOUBLE:    return test_d_new(opt);
   }
   return Stat();
 }

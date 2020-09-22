@@ -1,5 +1,7 @@
 #ifndef OPT_H_INCLUDED
-#define OPT_H
+#define OPT_H_INCLUDED
+
+#include <string.h>
 
 typedef unsigned long long ulonglong;
 typedef long long longlong;
@@ -11,6 +13,7 @@ class Options
   uint m_used_options;
   uint m_verbose;
   bool m_error;
+  bool m_vm;
   uint m_big_test;
   ulonglong m_count;
 
@@ -76,6 +79,7 @@ public:
     m_used_options(0),
     m_verbose(0),
     m_error(0),
+    m_vm(0),
     m_big_test(0),
     m_count(10*1000*1000ULL)
   {
@@ -91,12 +95,13 @@ public:
   }
   bool get_one_option(const char *av)
   {
-    if (!strncmp(av, "-?", 2))             m_error= true;
-    else if (!strncmp(av, "--verbose=", 10)) m_verbose= atoi(av+10);
-    else if (!strncmp(av, "--verbose", 9)) m_verbose= 1;
+    if (!strcmp(av, "-?"))                    m_error= true;
+    else if (!strncmp(av, "--verbose=", 10))  m_verbose= atoi(av+10);
+    else if (!strcmp(av, "--verbose"))        m_verbose= 1;
+    else if (!strcmp(av, "--vm"))             m_vm= true;
     else if (!strncmp(av, "--big-test=", 11)) m_big_test= atoi(av+11);
-    else if (!strncmp(av, "--big-test", 10)) m_big_test++;
-    else if (!strncmp(av, "--help", 6))    m_error= true;
+    else if (!strcmp(av, "--big-test"))       m_big_test++;
+    else if (!strncmp(av, "--help", 6))       m_error= true;
     else if (!strncmp(av, "--count=", 8))
     {
       if (get_ulonglong_size(&m_count, "--count", av + 8))
@@ -112,6 +117,7 @@ public:
   }
   uint used_options() const { return m_used_options; }
   bool error() const { return m_error; }
+  bool vm() const { return m_vm; }
   uint verbose() const { return m_verbose; }
   uint big_test() const { return m_big_test; }
   ulonglong count() const { return m_count; }
@@ -126,6 +132,7 @@ public:
     printf("                      0 - disabled\n");
     printf("                      1 - enabled\n");
     printf("                      2 - only big tests\n");
+    printf("  --vm              - use VM when possible (experimental)\n");
     printf("\n");
   }
 };
