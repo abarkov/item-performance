@@ -560,9 +560,9 @@ generate_tree(size_t max_depth)
 
   Item *root= generate_node(max_depth, storage);
 
-  std::string as_string;
-  root->print(&as_string);
-  std::cout << "                " << as_string << '\n';
+  // std::string as_string;
+  // root->print(&as_string);
+  // std::cout << "                " << as_string << '\n';
 
   assert(!storage.empty());
   return {root, std::move(storage)};
