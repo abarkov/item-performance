@@ -3,6 +3,45 @@
 
 inline void VM::exec_instr(const Instr &i)
 {
+#if 0
+  // Only "ll" operations are implemented. Run `./test --vm ll_plus` to test.
+  // Jump table is not faster than switch
+  static const void *jump_table[] =
+  {
+     &&nop,
+     &&mov_ll_to_ll0,
+     &&mov_ll_to_ll1,
+     &&add_ll0_ll1,
+     &&add_ll0_lli,
+     &&neg_ll0
+  };
+  goto *jump_table[i.m_cmd];
+
+nop:
+  return;
+
+mov_ll_to_ll0:
+  m_ll0= i.m_param_ll;
+  return;
+
+mov_ll_to_ll1:
+  m_ll1= i.m_param_ll;
+  return;
+
+add_ll0_ll1:
+  m_ll0+= m_ll1;
+  return;
+
+add_ll0_lli:
+  m_ll0+= i.m_param_ll;
+  return;
+
+neg_ll0:
+  m_ll0.neg();
+  return;
+
+#else
+
   switch (i.m_cmd) {
   case MOV_LL_TO_LL0:
     m_ll0= i.m_param_ll;
@@ -39,6 +78,7 @@ inline void VM::exec_instr(const Instr &i)
   case NOP:
     break;
   }
+#endif
 }
 
 
