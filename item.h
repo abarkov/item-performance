@@ -573,11 +573,18 @@ generate_tree(size_t max_depth)
 namespace variant
 {
 
+// variant is a 'tagged union'
+// Somethig like enum + union { Type1 t1; Type2 t2; Type3,  t3; ...}
+// It's safe to write code like variant<int, std::string> because variant
+// will always call a correct dtor and you won't have any memory leaks.
+// See more at https://en.cppreference.com/w/cpp/utility/variant
+
 struct Item_int;
 struct Item_func_uminus;
 struct Item_func_isnull;
 struct Item_func_add;
 
+// This is our polymorphic item class.
 using Item= mpark::variant<Item_int, Item_func_uminus, Item_func_isnull, Item_func_add>;
 
 struct Item_int
@@ -689,6 +696,7 @@ struct Item_func_isnull : Item_func
   }
 };
 
+// This is a direct replacement for virtual function calls. A different kind of dispatcher.
 #define SWITCH_CALL_RETURN(ITEM, METHOD)                                       \
   switch (ITEM.index())                                                        \
   {                                                                            \
