@@ -689,29 +689,44 @@ struct Item_func_isnull : Item_func
   }
 };
 
+#define SWITCH_CALL_RETURN(ITEM, METHOD)                                       \
+  switch (ITEM.index())                                                        \
+  {                                                                            \
+  case 0:                                                                      \
+    return mpark::get<Item_int>(ITEM).METHOD();                                \
+  case 1:                                                                      \
+    return mpark::get<Item_func_uminus>(ITEM).METHOD();                        \
+  case 2:                                                                      \
+    return mpark::get<Item_func_isnull>(ITEM).METHOD();                        \
+  case 3:                                                                      \
+    return mpark::get<Item_func_add>(ITEM).METHOD();                           \
+  default:                                                                     \
+    __builtin_unreachable();                                                   \
+  }
+
 static inline enum_field_types field_type(Item &item)
 {
-  return mpark::visit([](auto &&arg) { return arg.field_type(); }, item);
+  SWITCH_CALL_RETURN(item, field_type);
 };
 
 static inline Bool_null to_bool_null(Item &item)
 {
-  return mpark::visit([](auto &&arg) { return arg.to_bool_null(); }, item);
+  SWITCH_CALL_RETURN(item, to_bool_null);
 };
 
 static inline Longlong_null to_longlong_null(Item &item)
 {
-  return mpark::visit([](auto &&arg) { return arg.to_longlong_null(); }, item);
+  SWITCH_CALL_RETURN(item, to_longlong_null);
 };
 
 static inline Int32_null to_int32_null(Item &item)
 {
-  return mpark::visit([](auto &&arg) { return arg.to_int32_null(); }, item);
+  SWITCH_CALL_RETURN(item, to_int32_null);
 };
 
 static inline Double_null to_double_null(Item &item)
 {
-  return mpark::visit([](auto &&arg) { return arg.to_double_null(); }, item);
+  SWITCH_CALL_RETURN(item, to_double_null);
 };
 
 Item_hybrid_func::Item_hybrid_func(Item *a)

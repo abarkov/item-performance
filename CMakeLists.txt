@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(ItemPerformance)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_executable(test test.cc item_test.cc item_func.cc vm.cc)
