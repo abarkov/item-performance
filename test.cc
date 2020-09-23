@@ -132,8 +132,7 @@ public:
   MethodStatByType test_ll(Item *item, const Options &opt) const
   {
     MethodStatByType stt;
-    const char *eint32= getenv("INT32");
-    if (eint32 && atoi(eint32))
+    if (opt.int32api())
       stt+= test_int32(item, opt);
 
     StatAll st(
@@ -172,6 +171,8 @@ public:
       stt.st_bool+= MethodStat(st);
       break;
     case MYSQL_TYPE_LONGLONG:
+      opt.int32api() ?
+      stt.st_int32+= MethodStat(st) :
       stt.st_longlong+= MethodStat(st);
       break;
     case MYSQL_TYPE_DOUBLE:

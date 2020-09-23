@@ -14,6 +14,7 @@ class Options
   uint m_verbose;
   bool m_error;
   bool m_vm;
+  bool m_int32api;
   uint m_big_test;
   ulonglong m_count;
 
@@ -81,6 +82,7 @@ public:
     m_error(0),
     m_vm(0),
     m_big_test(0),
+    m_int32api(false),
     m_count(10*1000*1000ULL)
   {
     shift(&ac, &av);
@@ -99,6 +101,8 @@ public:
     else if (!strncmp(av, "--verbose=", 10))  m_verbose= atoi(av+10);
     else if (!strcmp(av, "--verbose"))        m_verbose= 1;
     else if (!strcmp(av, "--vm"))             m_vm= true;
+    else if (!strcmp(av, "--int32"))          m_int32api= true;
+    else if (!strncmp(av, "--int32=", 8))     m_int32api= atoi(av+8);
     else if (!strncmp(av, "--big-test=", 11)) m_big_test= atoi(av+11);
     else if (!strcmp(av, "--big-test"))       m_big_test++;
     else if (!strncmp(av, "--help", 6))       m_error= true;
@@ -118,6 +122,7 @@ public:
   uint used_options() const { return m_used_options; }
   bool error() const { return m_error; }
   bool vm() const { return m_vm; }
+  bool int32api() const { return m_int32api; }
   uint verbose() const { return m_verbose; }
   uint big_test() const { return m_big_test; }
   ulonglong count() const { return m_count; }
@@ -133,6 +138,9 @@ public:
     printf("                      1 - enabled\n");
     printf("                      2 - only big tests\n");
     printf("  --vm              - use VM when possible (experimental)\n");
+    printf("  --int32[=val]     - test INT32 API\n");
+    printf("                      0 - disabled (default)\n");
+    printf("                      1 - enabled\n");
     printf("\n");
   }
 };

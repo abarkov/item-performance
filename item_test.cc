@@ -101,7 +101,9 @@ Stat Item::test_native_old(const Options &opt)
   {
   case MYSQL_TYPE_NULL:
   case MYSQL_TYPE_BOOL:      return test_b_old(opt);
-  case MYSQL_TYPE_LONGLONG:  return test_ll_old(opt);
+  case MYSQL_TYPE_LONGLONG:  return opt.int32api() ?
+                                    test_int32_old(opt) :
+                                    test_ll_old(opt);
   case MYSQL_TYPE_DOUBLE:    return test_d_old(opt);
   }
   return Stat();
@@ -353,7 +355,9 @@ Stat Item::test_native_prm(const Options &opt)
   {
   case MYSQL_TYPE_NULL:
   case MYSQL_TYPE_BOOL:      return test_b_prm(opt);
-  case MYSQL_TYPE_LONGLONG:  return test_ll_prm(opt);
+  case MYSQL_TYPE_LONGLONG:  return opt.int32api() ?
+                                    test_int32_prm(opt) :
+                                    test_ll_prm(opt);
   case MYSQL_TYPE_DOUBLE:    return test_d_prm(opt);
   }
   return Stat();
@@ -366,7 +370,9 @@ Stat Item::test_native_get(const Options &opt)
   {
   case MYSQL_TYPE_NULL:
   case MYSQL_TYPE_BOOL:      return test_b_get(opt);
-  case MYSQL_TYPE_LONGLONG:  return test_ll_get(opt);
+  case MYSQL_TYPE_LONGLONG:  return opt.int32api() ?
+                                    test_int32_get(opt) :
+                                    test_ll_get(opt);
   case MYSQL_TYPE_DOUBLE:    return test_d_get(opt);
   }
   return Stat();
@@ -379,7 +385,9 @@ Stat Item::test_native_new(const Options &opt)
   {
   case MYSQL_TYPE_NULL:
   case MYSQL_TYPE_BOOL:      return test_b_new(opt);
-  case MYSQL_TYPE_LONGLONG:  return test_ll_new(opt);
+  case MYSQL_TYPE_LONGLONG:  return opt.int32api() ?
+                                    test_int32_new(opt) :
+                                    test_ll_new(opt);
   case MYSQL_TYPE_DOUBLE:    return test_d_new(opt);
   }
   return Stat();
