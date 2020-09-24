@@ -24,6 +24,14 @@ void Item_real::print(string *to)
   to->append(to_string(val));
 }
 
+void Item_decimal::print(string *to)
+{
+  char buff[DECIMAL_MAX_STR_LENGTH+1];
+  int len=DECIMAL_MAX_STR_LENGTH;
+  decimal2string(&val, buff, &len, 0, 0, 0);
+  to->append(buff);
+}
+
 void Item_func_uminus::print(string *to)
 {
   to->append("(-(");
@@ -58,6 +66,7 @@ bool Item_func_add::gen(VM *vm)
 {
   Item_int *ia, *ib;
   Item_real *da, *db;
+  Item_decimal *deca, *decb;
 
   if (arg_count == 2 &&
       (ia= dynamic_cast<Item_int*>(args[0])) &&
@@ -77,6 +86,14 @@ bool Item_func_add::gen(VM *vm)
     return false;
   }
 
+  if (arg_count == 2 &&
+      (deca= dynamic_cast<Item_decimal*>(args[0])) &&
+      (decb= dynamic_cast<Item_decimal*>(args[1])))
+  {
+    vm->push_back(VM::Instr(VM::MOV_DEC_TO_DEC0, deca->to_decimal_null()));
+    vm->push_back(VM::Instr(VM::ADD_DEC0_DECI, decb->to_decimal_null()));
+    return false;
+  }
   return true;
 }
 
@@ -114,6 +131,27 @@ double Item_func_uminus::val_real()
   }
   null_value= false;
   return -val0;
+}
+#endif
+
+
+#ifdef HAVE_NULL_VALUE
+my_decimal* Item_func_uminus::val_decimal(my_decimal *decimal_buffer)
+{
+  my_decimal *res= args[0]->val_decimal(decimal_buffer);
+  if (args[0]->null_value)
+  {
+    null_value= true;
+    return NULL;
+  }
+  null_value= false;
+  if (res != decimal_buffer)
+  {
+    *decimal_buffer= *res;
+    res= decimal_buffer;
+  }
+  decimal_neg(res);
+  return res;
 }
 #endif
 
@@ -168,6 +206,21 @@ double Item_func_add::val_real()
 }
 #endif
 
+#ifdef HAVE_NULL_VALUE
+my_decimal *Item_func_add::val_decimal(my_decimal *decimal_value)
+{
+  my_decimal value1, *val1;
+  my_decimal value2, *val2;
+  val1= args[0]->val_decimal(&value1);
+  if ((null_value= args[0]->null_value))
+    return 0;
+  val2= args[1]->val_decimal(&value2);
+  if (!(null_value= (args[1]->null_value ||
+                     decimal_add(val1, val2, decimal_value))))
+    return decimal_value;
+  return 0;
+}
+#endif
 
 #ifdef HAVE_NULL_VALUE
 longlong Item_func_add::val_int()
@@ -277,6 +330,15 @@ bool Item_cond_or::get_double(double *to)
   return false;
 }
 
+bool Item_cond_or::get_decimal(my_decimal *to)
+{
+  bool tmp;
+  if (Item_cond_or::get_bool(&tmp))
+    return true;
+  ulonglong2decimal((longlong)tmp, to);
+  return false;
+}
+
 
 bool Item_func_uminus::gen(VM *vm)
 {
@@ -291,6 +353,13 @@ bool Item_func_uminus::gen(VM *vm)
   {
     vm->push_back(VM::Instr(VM::MOV_D_TO_D0, args[0]->to_double_null()));
     vm->push_back(VM::Instr(VM::NEG_D0));
+    return false;
+  }
+
+  if (dynamic_cast<Item_decimal*>(args[0]))
+  {
+    vm->push_back(VM::Instr(VM::MOV_DEC_TO_DEC0, args[0]->to_decimal_null()));
+    vm->push_back(VM::Instr(VM::NEG_DEC0));
     return false;
   }
 
@@ -351,6 +420,12 @@ bool Item_func_uminus::get_double(double *to)
   return is_null;
 }
 
+bool Item_func_uminus::get_decimal(my_decimal *to)
+{
+  bool is_null= args[0]->get_decimal(to);
+  decimal_neg(to);
+  return is_null;
+}
 
 Bool_null Item_func_uminus::to_bool_null()
 {
@@ -364,6 +439,12 @@ double Item_func_uminus::val_real_null(bool *null_value_arg)
   return -val0;
 }
 
+my_decimal Item_func_uminus::val_decimal_null(bool *null_value_arg)
+{
+  my_decimal val0= args[0]->val_decimal_null(null_value_arg);
+  decimal_neg(&val0);
+  return val0;
+}
 
 Longlong_null Item_func_uminus::to_longlong_null()
 {
@@ -380,6 +461,11 @@ Int32_null Item_func_uminus::to_int32_null()
 Double_null Item_func_uminus::to_double_null()
 {
   return args[0]->to_double_null().neg();
+}
+
+Decimal_null Item_func_uminus::to_decimal_null()
+{
+  return args[0]->to_decimal_null().neg();
 }
 
 
@@ -415,6 +501,11 @@ int32 Item_cond_or::val_int32_null(bool *null_value_arg)
 double Item_cond_or::val_real_null(bool *null_value_arg)
 {
   return Item_cond_or::val_bool_null(null_value_arg);
+}
+
+my_decimal Item_cond_or::val_decimal_null(bool *null_value_arg)
+{
+  return Item_cond_or::val_decimal_null(null_value_arg);
 }
 
 
@@ -454,6 +545,11 @@ Double_null Item_cond_or::to_double_null()
   return Double_null(tmp.value, tmp.is_null);
 }
 
+Decimal_null Item_cond_or::to_decimal_null()
+{
+  Bool_null tmp= Item_cond_or::to_bool_null();
+  return Decimal_null((longlong)tmp.value, tmp.is_null);
+}
 
 bool Item_func_add::val_bool_null(bool *null_value_arg)
 {
@@ -523,6 +619,18 @@ bool Item_func_add::get_double(double *to)
   return is_null;
 }
 
+bool Item_func_add::get_decimal(my_decimal *to)
+{
+  my_decimal val0, val1;
+  bool is_null= args[0]->get_decimal(&val0);
+  if (is_null)
+    return true;
+  is_null= args[1]->get_decimal(&val1);
+  if (is_null)
+    return true;
+  decimal_add(&val0, &val1, to);
+  return false;
+}
 
 double Item_func_add::val_real_null(bool *null_value_arg)
 {
@@ -533,6 +641,18 @@ double Item_func_add::val_real_null(bool *null_value_arg)
   return val0 + val1;
 }
 
+my_decimal Item_func_add::val_decimal_null(bool *null_value_arg)
+{
+  my_decimal val0= args[0]->val_decimal_null(null_value_arg);
+  if (*null_value_arg)
+    return val0;
+  my_decimal val1= args[1]->val_decimal_null(null_value_arg);
+  if (*null_value_arg)
+    return val1;
+  my_decimal res;
+  decimal_add(&val0, &val1, &res);
+  return res;
+}
 
 Bool_null Item_func_add::to_bool_null()
 {
@@ -634,6 +754,19 @@ Double_null Item_func_add::to_double_null()
 #endif
 }
 
+Decimal_null Item_func_add::to_decimal_null()
+{
+  const Decimal_null nr0= args[0]->to_decimal_null();
+  if (nr0.is_null)
+    return nr0;
+  const Decimal_null nr1= args[1]->to_decimal_null();
+  if (nr1.is_null)
+    return nr1;
+  my_decimal res;
+  decimal_add(&nr0, &nr1, &res);
+  return Decimal_null(res, nr1.is_null);
+}
+
 
 void Item_func_isnull::print(string *to)
 {
@@ -652,6 +785,12 @@ bool Item_func_isnull::val_bool()
   case MYSQL_TYPE_BOOL:      args[0]->val_bool(); break;
   case MYSQL_TYPE_LONGLONG:  args[0]->val_int();  break;
   case MYSQL_TYPE_DOUBLE:    args[0]->val_real(); break;
+  case MYSQL_TYPE_NEWDECIMAL:
+    {
+      my_decimal decimal_buffer;
+      my_decimal *res= args[0]->val_decimal(&decimal_buffer);
+      break;
+    }
   }
   return args[0]->null_value;
 }
@@ -666,6 +805,7 @@ bool Item_func_isnull::val_bool_null(bool *null_value_arg)
   case MYSQL_TYPE_BOOL:      args[0]->val_bool_null(null_value_arg); break;
   case MYSQL_TYPE_LONGLONG:  args[0]->val_int_null(null_value_arg);  break;
   case MYSQL_TYPE_DOUBLE:    args[0]->val_real_null(null_value_arg); break;
+  case MYSQL_TYPE_NEWDECIMAL:args[0]->val_decimal_null(null_value_arg); break;
   }
   return *null_value_arg;
 }
@@ -695,6 +835,12 @@ bool Item_func_isnull::get_bool(bool *to)
     *to= args[0]->get_double(&tmp);
     return false;
   }
+  case MYSQL_TYPE_NEWDECIMAL:
+  {
+    my_decimal tmp;
+    *to= args[0]->get_decimal(&tmp);
+    return false;
+  }
   }
   return true;
 }
@@ -707,6 +853,7 @@ Bool_null Item_func_isnull::to_bool_null()
   case MYSQL_TYPE_BOOL:     return Bool_null(args[0]->to_bool_null().is_null);
   case MYSQL_TYPE_LONGLONG: return Bool_null(args[0]->to_longlong_null().is_null);
   case MYSQL_TYPE_DOUBLE:   return Bool_null(args[0]->to_double_null().is_null);
+  case MYSQL_TYPE_NEWDECIMAL:return Bool_null(args[0]->to_decimal_null().is_null);
   }
   //DBUG_ASSERT(0)
   return Bool_null(true);
@@ -748,6 +895,19 @@ double Item_func_coalesce::val_real()
   for (uint i=0 ; i < arg_count ; i++)
   {
     double res= args[i]->val_real();
+    if (!args[i]->null_value)
+      return res;
+  }
+  null_value= true;
+  return 0;
+}
+
+my_decimal *Item_func_coalesce::val_decimal(my_decimal *decimal_buffer)
+{
+  null_value= false;
+  for (uint i=0 ; i < arg_count ; i++)
+  {
+    my_decimal *res= args[i]->val_decimal(decimal_buffer);
     if (!args[i]->null_value)
       return res;
   }
@@ -834,6 +994,18 @@ double Item_func_coalesce::val_real_null(bool *null_value_arg)
   return args[last]->val_real_null(null_value_arg);
 }
 
+my_decimal Item_func_coalesce::val_decimal_null(bool *null_value_arg)
+{
+  uint last= arg_count - 1;
+  for (uint i=0 ; i < last ; i++)
+  {
+    my_decimal res= args[i]->val_decimal_null(null_value_arg);
+    if (!*null_value_arg)
+      return res;
+  }
+  return args[last]->val_decimal_null(null_value_arg);
+}
+
 bool Item_func_coalesce::get_bool(bool *to)
 {
   uint last= arg_count - 1;
@@ -879,6 +1051,17 @@ bool Item_func_coalesce::get_double(double *to)
       return false;
   }
   return args[last]->get_double(to);
+}
+
+bool Item_func_coalesce::get_decimal(my_decimal *to)
+{
+  uint last= arg_count - 1;
+  for (uint i= 0; i < last; i++)
+  {
+    if (!args[i]->get_decimal(to))
+      return false;
+  }
+  return args[last]->get_decimal(to);
 }
 
 
@@ -928,6 +1111,18 @@ Double_null Item_func_coalesce::to_double_null()
       return tmp;
   }
   return args[last]->to_double_null();
+}
+
+Decimal_null Item_func_coalesce::to_decimal_null()
+{
+  uint last= arg_count - 1;
+  for (uint i= 0; i < last; i++)
+  {
+    Decimal_null tmp= args[i]->to_decimal_null();
+    if (!tmp.is_null)
+      return tmp;
+  }
+  return args[last]->to_decimal_null();
 }
 
 /****************************************************************/
@@ -993,6 +1188,15 @@ double Item_func_last_value::val_real()
   null_value= last_value->null_value;
   return tmp;
 }
+
+my_decimal *Item_func_last_value::val_decimal(my_decimal *decimal_buffer)
+{
+  my_decimal *res;
+  evaluate_sideeffects_val_int();
+  res= last_value->val_decimal(decimal_buffer);
+  null_value= last_value->null_value;
+  return res;
+}
 #endif
 
 
@@ -1034,6 +1238,11 @@ double Item_func_last_value::val_real_null(bool *nl)
   return last_value->val_real_null(nl);
 }
 
+my_decimal Item_func_last_value::val_decimal_null(bool *nl)
+{
+  evaluate_sideeffects_val_int_null();
+  return last_value->val_decimal_null(nl);
+}
 
 void Item_func_last_value::evaluate_sideeffects_get_longlong()
 {
@@ -1060,6 +1269,11 @@ bool Item_func_last_value::get_double(double *to)
   return last_value->get_double(to);
 }
 
+bool Item_func_last_value::get_decimal(my_decimal *to)
+{
+  evaluate_sideeffects_get_longlong();
+  return last_value->get_decimal(to);
+}
 
 void Item_func_last_value::evaluate_sideeffects_get_int32()
 {
@@ -1114,6 +1328,11 @@ Double_null Item_func_last_value::to_double_null()
   return last_value->to_double_null();
 }
 
+Decimal_null Item_func_last_value::to_decimal_null()
+{
+  evaluate_sideeffects_to_longlong_null();
+  return last_value->to_decimal_null();
+}
 /******************************************************************/
 
 
@@ -1131,6 +1350,7 @@ bool Item_func_eq::gen(VM *vm)
 {
   Item_int *ia, *ib;
   Item_real *da, *db;
+  Item_decimal *deca, *decb;
 
   if (arg_count == 2 &&
       (ia= dynamic_cast<Item_int*>(args[0])) &&
@@ -1150,6 +1370,15 @@ bool Item_func_eq::gen(VM *vm)
     return false;
   }
 
+  if (arg_count == 2 &&
+      (deca= dynamic_cast<Item_decimal*>(args[0])) &&
+      (decb= dynamic_cast<Item_decimal*>(args[1])))
+  {
+    vm->push_back(VM::Instr(VM::MOV_DEC_TO_DEC0, deca->to_decimal_null()));
+    vm->push_back(VM::Instr(VM::EQ_DEC0_DECI, decb->to_decimal_null()));
+    return false;
+  }
+
   return true;
 }
 
@@ -1165,6 +1394,8 @@ bool Item_func_eq::val_bool()
     return cmp.eq_ll_using_val_int();
   case MYSQL_TYPE_DOUBLE:
     return cmp.eq_double_using_val_real();
+  case MYSQL_TYPE_NEWDECIMAL:
+    return cmp.eq_decimal_using_val_decimal();
   }
   return 0; // Make compliler happy
 }
@@ -1178,6 +1409,13 @@ double Item_func_eq::val_real()
 }
 #endif
 
+#ifdef HAVE_NULL_VALUE
+my_decimal *Item_func_eq::val_decimal(my_decimal *decimal_buffer)
+{
+  ulonglong2decimal(Item_func_eq::val_bool(), decimal_buffer);
+  return decimal_buffer;
+}
+#endif
 
 #ifdef HAVE_NULL_VALUE
 longlong Item_func_eq::val_int()
@@ -1197,7 +1435,7 @@ int32 Item_func_eq::val_int32()
 
 bool Item_func_eq::val_bool_null(bool *null_value_arg)
 {
-  return cmp.eq_ll_using_val_int_null(null_value_arg);
+  //return cmp.eq_ll_using_val_int_null(null_value_arg);
   switch (cmp_type.m_field_type) {
   case MYSQL_TYPE_NULL:
   case MYSQL_TYPE_BOOL:
@@ -1206,9 +1444,11 @@ bool Item_func_eq::val_bool_null(bool *null_value_arg)
     return cmp.eq_ll_using_val_int_null(null_value_arg);
   case MYSQL_TYPE_DOUBLE:
     return cmp.eq_double_using_val_real_null(null_value_arg);
+  case MYSQL_TYPE_NEWDECIMAL:
+    return cmp.eq_decimal_using_val_decimal_null(null_value_arg);
   }
   // Make compiler happy
-  *null_value_arg= false;
+  *null_value_arg= true;
   return false;
 }
 
@@ -1230,10 +1470,14 @@ double Item_func_eq::val_real_null(bool *null_value_arg)
   return Item_func_eq::val_bool_null(null_value_arg);
 }
 
+my_decimal Item_func_eq::val_decimal_null(bool *null_value_arg)
+{
+  return my_decimal((longlong)Item_func_eq::val_bool_null(null_value_arg));
+}
 
 bool Item_func_eq::get_bool(bool *to)
 {
-  return cmp.eq_ll_using_get_longlong(to);
+  //return cmp.eq_ll_using_get_longlong(to);
 
   switch (cmp_type.m_field_type) {
   case MYSQL_TYPE_NULL:
@@ -1243,6 +1487,8 @@ bool Item_func_eq::get_bool(bool *to)
     return cmp.eq_ll_using_get_longlong(to);
   case MYSQL_TYPE_DOUBLE:
     return cmp.eq_double_using_get_double(to);
+  case MYSQL_TYPE_NEWDECIMAL:
+    return cmp.eq_decimal_using_get_decimal(to);
   }
   *to= false;
   return false; // Make compiler happy
@@ -1275,10 +1521,17 @@ bool Item_func_eq::get_double(double *to)
   return isnull;
 }
 
+bool Item_func_eq::get_decimal(my_decimal *to)
+{
+  bool nr;
+  bool isnull= Item_func_eq::get_bool(&nr);
+  ulonglong2decimal(nr, to);
+  return isnull;
+}
 
 Bool_null Item_func_eq::to_bool_null()
 {
-  return cmp.eq_ll_using_to_longlong_null();
+  //return cmp.eq_ll_using_to_longlong_null();
 
   switch (cmp_type.m_field_type) {
   case MYSQL_TYPE_NULL:
@@ -1288,6 +1541,8 @@ Bool_null Item_func_eq::to_bool_null()
     return cmp.eq_ll_using_to_longlong_null();
   case MYSQL_TYPE_DOUBLE:
     return cmp.eq_double_using_to_double_null();
+  case MYSQL_TYPE_NEWDECIMAL:
+    return cmp.eq_decimal_using_to_decimal_null();
   }
   return Bool_null(false);
 }
@@ -1313,6 +1568,12 @@ Double_null Item_func_eq::to_double_null()
   return Double_null(nr0.value, nr0.is_null);
 }
 
+Decimal_null Item_func_eq::to_decimal_null()
+{
+  const Bool_null nr0= Item_func_eq::to_bool_null();
+  return Decimal_null((longlong)nr0.value, nr0.is_null);
+}
+
 static inline size_t get_random_int() {
   static std::random_device rd;
   static std::default_random_engine dre(rd());
@@ -1323,7 +1584,7 @@ static inline size_t get_random_int() {
 Item *node_factory(size_t depth_left,
                    std::vector<std::unique_ptr<Item>> &storage)
 {
-  switch (get_random_int() % 16)
+  switch (get_random_int() % 17)
   {
   case 0:
     return new Item_int(0x27);
@@ -1368,6 +1629,8 @@ Item *node_factory(size_t depth_left,
     return new Item_func_last_value(generate_node(depth_left - 1, storage),
                                     generate_node(depth_left - 1, storage),
                                     generate_node(depth_left - 1, storage));
+  case 16:
+    return new Item_decimal(12.34);
   default:
     assert(0);
     return nullptr;
@@ -1429,6 +1692,19 @@ Double_null Item_func_add::to_double_null()
   return Double_null(nr0.value + nr1.value, nr1.is_null);
 }
 
+Decimal_null Item_func_add::to_decimal_null()
+{
+  const Decimal_null nr0= variant::to_decimal_null(*args[0]);
+  if (nr0.is_null)
+    return nr0;
+  const Decimal_null nr1= variant::to_decimal_null(*args[1]);
+  if (nr1.is_null)
+    return nr1;
+  my_decimal res;
+  decimal_add(&nr0, &nr1, &res);
+  return Decimal_null(res, nr1.is_null);
+}
+
 Bool_null Item_func_uminus::to_bool_null()
 {
   Double_null nr= Item_func_uminus::to_double_null();
@@ -1450,6 +1726,11 @@ Double_null Item_func_uminus::to_double_null()
   return variant::to_double_null(*args[0]);
 }
 
+Decimal_null Item_func_uminus::to_decimal_null()
+{
+  return variant::to_decimal_null(*args[0]);
+}
+
 Bool_null Item_func_isnull::to_bool_null()
 {
   switch (m_arg0_field_type)
@@ -1462,6 +1743,8 @@ Bool_null Item_func_isnull::to_bool_null()
     return Bool_null(variant::to_longlong_null(*args[0]).is_null);
   case MYSQL_TYPE_DOUBLE:
     return Bool_null(variant::to_double_null(*args[0]).is_null);
+  case MYSQL_TYPE_NEWDECIMAL:
+    return Bool_null(variant::to_decimal_null(*args[0]).is_null);
   }
   assert(0);
   return Bool_null(true);

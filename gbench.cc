@@ -160,7 +160,46 @@ namespace
     for (auto _ : state)                                                       \
       ITEM->to_double_null();                                                  \
   }                                                                            \
-  BENCHMARK(BM_##NAME##_to_double_null);
+  BENCHMARK(BM_##NAME##_to_double_null);                                       \
+                                                                               \
+  void BM_##NAME##_val_decimal(benchmark::State &state)                        \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      my_decimal buffer;                                                       \
+      ITEM->val_decimal(&buffer);                                              \
+      bool is_null= ITEM->null_value;                                          \
+      benchmark::DoNotOptimize(is_null);                                       \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_val_decimal);                                          \
+                                                                               \
+  void BM_##NAME##_get_decimal(benchmark::State &state)                        \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      my_decimal value;                                                        \
+      ITEM->get_decimal(&value);                                               \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_get_decimal);                                          \
+                                                                               \
+  void BM_##NAME##_val_decimal_null(benchmark::State &state)                   \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+    {                                                                          \
+      bool is_null= false;                                                     \
+      ITEM->val_decimal_null(&is_null);                                        \
+    }                                                                          \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_val_decimal_null);                                     \
+                                                                               \
+  void BM_##NAME##_to_decimal_null(benchmark::State &state)                    \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+      ITEM->to_decimal_null();                                                 \
+  }                                                                            \
+  BENCHMARK(BM_##NAME##_to_decimal_null);
 
 std::unique_ptr<Item> g_int1(new Item_int(0x77));
 std::unique_ptr<Item> g_int2(new Item_int(0x77));
@@ -216,7 +255,14 @@ TEST_SET(Item_random_tree, g_random_tree.first);
     for (auto _ : state)                                                       \
       to_double_null(ITEM);                                                    \
   }                                                                            \
-  BENCHMARK(BM_variant_##NAME##_to_double_null);
+  BENCHMARK(BM_variant_##NAME##_to_double_null);                               \
+                                                                               \
+  void BM_variant_##NAME##_to_decimal_null(benchmark::State &state)            \
+  {                                                                            \
+    for (auto _ : state)                                                       \
+      to_decimal_null(ITEM);                                                   \
+  }                                                                            \
+  BENCHMARK(BM_variant_##NAME##_to_decimal_null);
 
 namespace variant
 {

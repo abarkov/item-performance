@@ -56,6 +56,35 @@ Stat Item::test_d_old(const Options &opt)
 }
 #endif
 
+#ifdef HAVE_NULL_VALUE
+Stat Item::test_dec_old(const Options &opt)
+{
+  if (opt.vm())
+  {
+    VM vm;
+    if (!gen(&vm))
+      return test_dec_vm(&vm, opt);
+  }
+  Stat st;
+  Timer t0;
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
+  {
+    my_decimal buf;
+    my_decimal *res= val_decimal(&buf);
+    if (!null_value)
+    {
+      double dbl;
+      decimal2double(res, &dbl);
+      st.sum_d+= dbl;
+    }
+  }
+  st.time_spent= Timer().diff(t0);
+  st.method= "val_decimal";
+  st.use_sum_d= true;
+  return st;
+}
+#endif
+
 
 #ifdef HAVE_NULL_VALUE
 
@@ -111,6 +140,7 @@ Stat Item::test_native_old(const Options &opt)
                                     test_int32_old(opt) :
                                     test_ll_old(opt);
   case MYSQL_TYPE_DOUBLE:    return test_d_old(opt);
+  case MYSQL_TYPE_NEWDECIMAL:return test_dec_old(opt);
   }
   return Stat();
 }
@@ -169,6 +199,27 @@ Stat Item::test_d_prm(const Options &opt)
   return st;
 }
 
+Stat Item::test_dec_prm(const Options &opt)
+{
+  Stat st;
+  Timer t0;
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
+  {
+    bool tmp_null_value;
+    my_decimal tmp= val_decimal_null(&tmp_null_value);
+    if (!tmp_null_value)
+    {
+      double res;
+      decimal2double(&tmp, &res);
+      st.sum_d+= res;
+    }
+  }
+  st.time_spent= Timer().diff(t0);
+  st.method= "val_decimal_null";
+  st.use_sum_d= true;
+  return st;
+}
+
 
 Stat Item::test_d_get(const Options &opt)
 {
@@ -186,6 +237,25 @@ Stat Item::test_d_get(const Options &opt)
   return st;
 }
 
+Stat Item::test_dec_get(const Options &opt)
+{
+  Stat st;
+  Timer t0;
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
+  {
+    my_decimal tmp;
+    if (!get_decimal(&tmp))
+    {
+      double res;
+      decimal2double(&tmp, &res);
+      st.sum_d+= res;
+    }
+  }
+  st.time_spent= Timer().diff(t0);
+  st.method= "get_decimal";
+  st.use_sum_d= true;
+  return st;
+}
 
 Stat Item::test_ll_prm(const Options &opt)
 {
@@ -286,6 +356,27 @@ Stat Item::test_d_new(const Options &opt)
 }
 
 
+Stat Item::test_dec_new(const Options &opt)
+{
+  Stat st;
+  Timer t0;
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
+  {
+    Decimal_null res= to_decimal_null();
+    if (!res.is_null)
+    {
+      double rs;
+      decimal2double(&res, &rs);
+      st.sum_d+= rs;
+    }
+  }
+  st.time_spent= Timer().diff(t0);
+  st.method= "to_decimal_null";
+  st.use_sum_d= true;
+  return st;
+}
+
+
 Stat Item::test_ll_new(const Options &opt)
 {
   Stat st;
@@ -368,6 +459,21 @@ Stat Item::test_d_vm(VM *vm, const Options &opt)
   return st;
 }
 
+Stat Item::test_dec_vm(VM *vm, const Options &opt)
+{
+  Stat st;
+  Timer t0;
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
+  {
+    vm->exec();
+    if (!vm->m_d0.is_null)
+      st.sum_d+= vm->m_d0.value;
+  }
+  st.time_spent= Timer().diff(t0);
+  st.method= "vm_decimal";
+  st.use_sum_d= true;
+  return st;
+}
 
 /***************************************************/
 
@@ -381,6 +487,7 @@ Stat Item::test_native_prm(const Options &opt)
                                     test_int32_prm(opt) :
                                     test_ll_prm(opt);
   case MYSQL_TYPE_DOUBLE:    return test_d_prm(opt);
+  case MYSQL_TYPE_NEWDECIMAL:return test_dec_prm(opt);
   }
   return Stat();
 }
@@ -396,6 +503,7 @@ Stat Item::test_native_get(const Options &opt)
                                     test_int32_get(opt) :
                                     test_ll_get(opt);
   case MYSQL_TYPE_DOUBLE:    return test_d_get(opt);
+  case MYSQL_TYPE_NEWDECIMAL:return test_dec_get(opt);
   }
   return Stat();
 }
@@ -411,6 +519,7 @@ Stat Item::test_native_new(const Options &opt)
                                     test_int32_new(opt) :
                                     test_ll_new(opt);
   case MYSQL_TYPE_DOUBLE:    return test_d_new(opt);
+  case MYSQL_TYPE_NEWDECIMAL:return test_dec_new(opt);
   }
   return Stat();
 }

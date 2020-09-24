@@ -51,6 +51,7 @@ void MethodStatByType::print() const
   st_int32.print_if("int32");
   st_longlong.print_if("longlong");
   st_double.print_if("double");
+  st_decimal.print_if("decimal");
 }
 
 
@@ -129,6 +130,24 @@ public:
     return stt;
   }
 
+  MethodStatByType test_dec(Item *item, const Options &opt) const
+  {
+    StatAll st(
+#ifdef HAVE_NULL_VALUE
+      item->test_dec_old(opt),
+#else
+      Stat(),
+#endif
+      item->test_dec_prm(opt),
+      item->test_dec_get(opt),
+      item->test_dec_new(opt));
+    print(item, st);
+    printf("\n");
+    MethodStatByType stt;
+    stt.st_decimal+= MethodStat(st);
+    return stt;
+  }
+
   MethodStatByType test_int32(Item *item, const Options &opt) const
   {
     StatAll st(
@@ -204,6 +223,14 @@ public:
       print(item, st);
 
       stt.st_double+= MethodStat(st);
+      break;
+    }
+    case MYSQL_TYPE_NEWDECIMAL:
+    {
+      StatAllNative st(item, opt);
+      print(item, st);
+
+      stt.st_decimal+= MethodStat(st);
       break;
     }
     }
@@ -609,12 +636,125 @@ public:
     Item *d0= new Item_real(x);
     Item *lv_b0= new Item_func_last_value(d0);
     Item *lv_b0_b0_b0= new Item_func_last_value(d0, d0, d0);
- 
+
     Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
     return test_native(items, opt);
   }
 };
 
+
+class Test_decimal_misc: public Test
+{
+public:
+  const char *name() const override { return "decimal_misc"; }
+  MethodStatByType run(const Options &opt) const override
+  {
+    Item *d0= new Item_decimal((longlong)x);                   // DEC
+    Item *uminus_d0= new Item_func_uminus(d0);                 // -DEC
+    Item *uminus_uminus_d0= new Item_func_uminus(uminus_d0);   // -(-DEC)
+
+    MethodStatByType st;
+    Item *items[]=
+    {
+      d0,
+      uminus_d0,
+      uminus_uminus_d0,
+      NULL
+    };
+    return test_native(items, opt);
+  }
+};
+
+class Test_decimal_eq: public Test
+{
+public:
+  const char *name() const override { return "decimal_eq"; }
+  MethodStatByType run(const Options &opt) const override
+  {
+    Item *nl= new Item_null;
+    Item *b0= new Item_decimal((longlong)x);
+    Item *cmp1= new Item_func_eq(nl, nl);
+    Item *cmp2= new Item_func_eq(b0, nl);
+    Item *cmp3= new Item_func_eq(b0, b0);
+
+    Item *items[]= {cmp1, cmp2, cmp3, NULL};
+    return test_native(items, opt);
+  }
+};
+
+class Test_decimal_plus: public Test
+{
+public:
+  const char *name() const override { return "decimal_plus"; }
+  MethodStatByType run(const Options &opt) const override
+  {
+    Item *nl= new Item_null();
+    Item *d0= new Item_decimal((longlong)x);
+    Item *d1= new Item_decimal((longlong)y);
+
+    Item *add_nl_d0= new Item_func_add(nl, d0);                // (NULL+ DBL)
+    Item *add_d0_nl= new Item_func_add(d0, nl);                // (DBL + NULL)
+    Item *add_d_d= new Item_func_add(d0, d1);                  // (DBL + DBL)
+    Item *add_d_d_d0= new Item_func_add(add_d_d, d0);          // (DBL + DBL) + DBL
+    Item *add_d_d_d1= new Item_func_add(add_d_d, d1);          // (DBL + DBL) + DBL
+    Item *add_d_d_d_d= new Item_func_add(add_d_d_d1, d1);      // (DBL +...+DBL)
+    Item *add_d_d_d_d_d= new Item_func_add(add_d_d_d_d, d0);   // (DBL +...+DBL)
+
+    Item *items[]=
+    {
+      add_nl_d0,
+      add_d0_nl,
+      add_d_d,
+      add_d_d_d0,
+      add_d_d_d_d_d,
+      NULL
+    };
+    return test_native(items, opt);
+  }
+};
+
+class Test_decimal_coalesce: public Test
+{
+public:
+  const char *name() const override { return "decimal_coalesce"; }
+  MethodStatByType run(const Options &opt) const override
+  {
+    Item *nl= new Item_null;
+    Item *d0= new Item_decimal((longlong)x);
+    Item *coalesce_d0= new Item_func_coalesce(d0);        // COALESCE(DBL)
+    Item *coalesce_nl_d0= new Item_func_coalesce(nl, d0); // COALESCE(NULL,DBL)
+    Item *coalesce_nl_nl= new Item_func_coalesce(nl, nl); // COALESCE(NULL,NULL)
+    Item *coalesce_nl_nl_d0= new Item_func_coalesce(nl, nl, d0); // (NULL,NULL,DBL)
+    Item *coalesce_nl_nl__d0= new Item_func_coalesce(coalesce_nl_nl, d0);//((NULL,NULL),DBL)
+
+    MethodStatByType st;
+    Item *items[]=
+    {
+      coalesce_d0,
+      coalesce_nl_d0,
+      coalesce_nl_nl_d0,
+      coalesce_nl_nl__d0,
+      NULL
+    };
+    return test_native(items, opt);
+  }
+};
+
+class Test_decimal_last_value: public Test
+{
+public:
+  const char *name() const override { return "decimal_last_value"; }
+  MethodStatByType run(const Options &opt) const override
+  {
+    Item *nl= new Item_null;
+    Item *d0= new Item_real((longlong)x);
+    Item *lv_b0= new Item_func_last_value(d0);
+    Item *lv_b0_b0_b0= new Item_func_last_value(d0, d0, d0);
+
+    Item *items[]= {lv_b0, lv_b0_b0_b0, NULL};
+    return test_native(items, opt);
+  }
+};
 
 class Test_random: public Test
 {
@@ -655,6 +795,11 @@ MethodStatByType run(const char *name, const Options &opt)
   static const Test_double_plus       test_double_plus;
   static const Test_double_coalesce   test_double_coalesce;
   static const Test_double_last_value test_double_last_value;
+  static const Test_decimal_misc       test_decimal_misc;
+  static const Test_decimal_eq         test_decimal_eq;
+  static const Test_decimal_plus       test_decimal_plus;
+  static const Test_decimal_coalesce   test_decimal_coalesce;
+  static const Test_decimal_last_value test_decimal_last_value;
   static const Test_random            test_random;
 
   static const Test *tests[]=
@@ -676,6 +821,11 @@ MethodStatByType run(const char *name, const Options &opt)
     &test_double_plus,
     &test_double_coalesce,
     &test_double_last_value,
+    &test_decimal_misc,
+    &test_decimal_eq,
+    &test_decimal_plus,
+    &test_decimal_coalesce,
+    &test_decimal_last_value,
     &test_random,
     NULL
   };
