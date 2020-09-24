@@ -45,8 +45,10 @@ public:
       m_field_type= std::max(ta, tb);
     else if (ta == MYSQL_TYPE_DOUBLE || tb == MYSQL_TYPE_DOUBLE)
       m_field_type= MYSQL_TYPE_DOUBLE;
-    else
+    else if (ta == MYSQL_TYPE_LONGLONG || tb == MYSQL_TYPE_LONGLONG)
       m_field_type= MYSQL_TYPE_LONGLONG;
+    else
+      m_field_type= MYSQL_TYPE_NEWDECIMAL;
   }
   Hybrid_field_type(enum_field_types ta,
                     enum_field_types tb,
@@ -88,22 +90,26 @@ public:
   double val_real() override;
   longlong val_int() override;
   int32 val_int32() override;
+  my_decimal *val_decimal(my_decimal *decimal_buffer) override;
 #endif
 
   bool val_bool_null(bool *null_value_arg) override;
   longlong val_int_null(bool *null_value_arg) override;
   int32 val_int32_null(bool *null_value_arg) override;
   double val_real_null(bool *null_value_arg) override;
+  my_decimal val_decimal_null(bool *null_value_arg) override;
 
   bool get_bool(bool *to) override;
   bool get_longlong(longlong *to) override;
   bool get_int32(int32 *to) override;
   bool get_double(double *to) override;
+  bool get_decimal(my_decimal *to) override;
 
   Bool_null to_bool_null() override;
   Longlong_null to_longlong_null() override;
   Int32_null to_int32_null() override;
   Double_null to_double_null() override;
+  Decimal_null to_decimal_null() override;
 };
 
 
@@ -131,22 +137,30 @@ public:
   {
     return Item_cond_or::val_bool();
   }
+  my_decimal *val_decimal(my_decimal *decimal_buffer) override
+  {
+    ulonglong2decimal(Item_cond_or::val_bool(), decimal_buffer);
+    return decimal_buffer;
+  }
 #endif
 
   bool val_bool_null(bool *null_value_arg) override;
   longlong val_int_null(bool *null_value_arg) override;
   int32 val_int32_null(bool *null_value_arg) override;
   double val_real_null(bool *null_value_arg) override;
+  my_decimal val_decimal_null(bool *null_value_arg) override;
 
   bool get_bool(bool *to) override;
   bool get_longlong(longlong *to) override;
   bool get_int32(int32 *to) override;
   bool get_double(double *to) override;
+  bool get_decimal(my_decimal *to) override;
 
   Bool_null to_bool_null() override;
   Longlong_null to_longlong_null() override;
   Int32_null to_int32_null() override;
   Double_null to_double_null() override;
+  Decimal_null to_decimal_null() override;
 };
 
 
@@ -161,22 +175,26 @@ public:
   double val_real() override;
   longlong val_int() override;
   int32 val_int32() override;
+  my_decimal *val_decimal(my_decimal *decimal_buffer) override;
 #endif
 
   bool val_bool_null(bool *null_value_arg) override;
   longlong val_int_null(bool *null_value_arg) override;
   int32 val_int32_null(bool *null_value_arg) override;
   double val_real_null(bool *null_value_arg) override;
+  my_decimal val_decimal_null(bool *null_value_arg) override;
 
   bool get_bool(bool *to) override;
   bool get_longlong(longlong *to) override;
   bool get_int32(int32 *to) override;
   bool get_double(double *to) override;
+  bool get_decimal(my_decimal *to) override;
 
   Bool_null to_bool_null() override;
   Longlong_null to_longlong_null() override;
   Int32_null to_int32_null() override;
   Double_null to_double_null() override;
+  Decimal_null to_decimal_null() override;
 };
 
 
@@ -207,6 +225,11 @@ public:
   {
     return Item_func_isnull::val_bool();
   }
+  my_decimal *val_decimal(my_decimal *decimal_buffer) override
+  {
+    longlong2decimal((longlong)Item_func_isnull::val_bool(), decimal_buffer);
+    return decimal_buffer;
+  }
 #endif
 
   bool val_bool_null(bool *null_value_arg) override;
@@ -221,6 +244,10 @@ public:
   double val_real_null(bool *null_value_arg) override
   {
     return Item_func_isnull::val_bool_null(null_value_arg);
+  }
+  my_decimal val_decimal_null(bool *null_value_arg) override
+  {
+    return my_decimal((longlong)Item_func_isnull::val_bool_null(null_value_arg));
   }
 
   bool get_bool(bool *to) override;
@@ -245,6 +272,13 @@ public:
     *to= tmp;
     return is_null;
   }
+  bool get_decimal(my_decimal *to) override
+  {
+    bool tmp;
+    Item_func_isnull::get_bool(&tmp);
+    ulonglong2decimal((longlong)tmp, to);
+    return false;
+  }
 
   Bool_null to_bool_null() override;
   Longlong_null to_longlong_null() override
@@ -262,6 +296,12 @@ public:
     Bool_null val= Item_func_isnull::to_bool_null();
     return Double_null(val.value, val.is_null);
   }
+  Decimal_null to_decimal_null() override
+  {
+    Bool_null val= Item_func_isnull::to_bool_null();
+    return Decimal_null((longlong)val.value, val.is_null);
+  }
+
 };
 
 
@@ -277,22 +317,26 @@ public:
   double val_real() override;
   longlong val_int() override;
   int32 val_int32() override;
+  my_decimal *val_decimal(my_decimal *decimal_buffer) override;
 #endif
 
   bool val_bool_null(bool *null_value_arg) override;
   longlong val_int_null(bool *null_value_arg) override;
   int32 val_int32_null(bool *null_value_arg) override;
   double val_real_null(bool *null_value_arg) override;
+  my_decimal val_decimal_null(bool *null_value_arg) override;
 
   bool get_bool(bool *to) override;
   bool get_longlong(longlong *to) override;
   bool get_int32(int32 *to) override;
   bool get_double(double *to) override;
+  bool get_decimal(my_decimal *to) override;
 
   Bool_null to_bool_null() override;
   Longlong_null to_longlong_null() override;
   Int32_null to_int32_null() override;
   Double_null to_double_null() override;
+  Decimal_null to_decimal_null() override;
 };
 
 
@@ -320,6 +364,25 @@ public:
     }
     owner->null_value= false;
     return val0 == val1;
+  }
+  bool eq_decimal_using_val_decimal()
+  {
+    my_decimal buf0;
+    my_decimal *val0= a->val_decimal(&buf0);
+    if (a->null_value)
+    {
+      owner->null_value= true;
+      return false;
+    }
+    my_decimal buf1;
+    my_decimal *val1= a->val_decimal(&buf1);
+    if (b->null_value)
+    {
+      owner->null_value= true;
+      return false;
+    }
+    owner->null_value= false;
+    return decimal_cmp(val0, val1) == 0;
   }
   bool eq_ll_using_val_int_null(bool *null_value_arg)
   {
@@ -407,11 +470,21 @@ public:
   }
   bool eq_double_using_val_real_null(bool *null_value_arg)
   {
-    bool val0= a->val_real_null(null_value_arg);
+    double val0= a->val_real_null(null_value_arg);
     if (*null_value_arg)
       return false;
     double val1= b->val_real_null(null_value_arg);
     return val0 == val1;
+  }
+  bool eq_decimal_using_val_decimal_null(bool *null_value_arg)
+  {
+    my_decimal val0= a->val_decimal_null(null_value_arg);
+    if (*null_value_arg)
+      return false;
+    my_decimal val1= b->val_decimal_null(null_value_arg);
+    if (*null_value_arg)
+      return false;
+    return decimal_cmp(&val0, &val1) == 0;
   }
   bool eq_double_using_get_double(bool *to)
   {
@@ -421,6 +494,15 @@ public:
     *to= val0 == val1;
     return false;
   }
+  bool eq_decimal_using_get_decimal(bool *to)
+  {
+    my_decimal val0, val1;
+    if (a->get_decimal(&val0) || b->get_decimal(&val1))
+      return true;
+    *to= (decimal_cmp(&val0, &val1) == 0);
+    return false;
+
+  }
   Bool_null eq_double_using_to_double_null()
   {
     const Double_null nr0= a->to_double_null();
@@ -428,6 +510,16 @@ public:
       return Bool_null();
     const Double_null nr1= b->to_double_null();
     return Bool_null(nr0.value == nr1.value, nr1.is_null);
+  }
+  Bool_null eq_decimal_using_to_decimal_null()
+  {
+    const Decimal_null nr0= a->to_decimal_null();
+    if (nr0.is_null)
+      return Bool_null();
+    const Decimal_null nr1= b->to_decimal_null();
+    if (nr1.is_null)
+      return Bool_null();
+    return Bool_null(decimal_cmp(&nr0, &nr1) == 0, false);
   }
   /*************************/
   bool eq_bool_using_val_bool()
@@ -493,22 +585,26 @@ public:
   double val_real() override;
   longlong val_int() override;
   int32 val_int32() override;
+  my_decimal* val_decimal(my_decimal *decimal_buffer) override;
 #endif
 
   bool val_bool_null(bool *null_value_arg) override;
   longlong val_int_null(bool *null_value_arg) override;
   int32 val_int32_null(bool *null_value_arg) override;
   double val_real_null(bool *null_value_arg) override;
+  my_decimal val_decimal_null(bool *null_value_arg) override;
 
   bool get_bool(bool *to) override;
   bool get_longlong(longlong *to) override;
   bool get_int32(int32 *to) override;
   bool get_double(double *to) override;
+  bool get_decimal(my_decimal *to) override;
 
   Bool_null to_bool_null() override;
   Longlong_null to_longlong_null() override;
   Int32_null to_int32_null() override;
   Double_null to_double_null() override;
+  Decimal_null to_decimal_null() override;
 };
 
 
@@ -535,6 +631,7 @@ public:
   double val_real() override;
   longlong val_int() override;
   int32 val_int32() override;
+  my_decimal* val_decimal(my_decimal *decimal_buffer) override;
 #endif
 
   void evaluate_sideeffects_val_int_null();
@@ -543,6 +640,7 @@ public:
   longlong val_int_null(bool *null_value_arg) override;
   int32 val_int32_null(bool *null_value_arg) override;
   double val_real_null(bool *null_value_arg) override;
+  my_decimal val_decimal_null(bool *null_value_arg) override;
 
   void evaluate_sideeffects_get_longlong();
   void evaluate_sideeffects_get_int32();
@@ -550,6 +648,7 @@ public:
   bool get_longlong(longlong *to) override;
   bool get_int32(int32 *to) override;
   bool get_double(double *to) override;
+  bool get_decimal(my_decimal *to) override;
 
   void evaluate_sideeffects_to_longlong_null();
   void evaluate_sideeffects_to_int32_null();
@@ -557,6 +656,7 @@ public:
   Longlong_null to_longlong_null() override;
   Int32_null to_int32_null() override;
   Double_null to_double_null() override;
+  Decimal_null to_decimal_null() override;
 };
 
 

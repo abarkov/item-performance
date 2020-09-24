@@ -15,6 +15,7 @@
 #include "sql_type_bool.h"
 #include "sql_type_double.h"
 #include "sql_type_int.h"
+#include "sql_type_decimal.h"
 
 #include "opt.h"
 
@@ -110,12 +111,14 @@ public:
   MethodStat st_int32;
   MethodStat st_longlong;
   MethodStat st_double;
+  MethodStat st_decimal;
   MethodStatByType operator+=(const MethodStatByType &st)
   {
     st_bool+= st.st_bool;
     st_int32+= st.st_int32;
     st_longlong+= st.st_longlong;
     st_double+= st.st_double;
+    st_decimal+= st.st_decimal;
     return *this;
   }
   MethodStat total() const
@@ -125,6 +128,7 @@ public:
     st+= st_int32;
     st+= st_longlong;
     st+= st_double;
+    st+= st_decimal;
     return st;
   }
   void print() const;
@@ -141,11 +145,13 @@ public:
   virtual double val_real()= 0;
   virtual longlong val_int()= 0;
   virtual int32 val_int32()= 0;
+  virtual my_decimal *val_decimal(my_decimal *decimal_buffer)= 0;
   Stat test_b_old(const Options &opt);
   Stat test_d_old(const Options &opt);
   Stat test_int32_old(const Options &opt);
   Stat test_ll_old(const Options &opt);
   Stat test_native_old(const Options &opt);
+  Stat test_dec_old(const Options &opt);
 #endif
   virtual ~Item() { }
 
@@ -159,16 +165,19 @@ public:
   virtual longlong val_int_null(bool *null_value_arg)= 0;
   virtual int32 val_int32_null(bool *null_value_arg)= 0;
   virtual double val_real_null(bool *null_value_arg)= 0;
+  virtual my_decimal val_decimal_null(bool *null_value_arg)= 0;
 
   virtual bool get_bool(bool *to)= 0;
   virtual bool get_longlong(longlong *to)= 0;
   virtual bool get_int32(int32 *to)= 0;
   virtual bool get_double(double *to)= 0;
+  virtual bool get_decimal(my_decimal *to)= 0;
 
   virtual Bool_null to_bool_null()= 0;
   virtual Longlong_null to_longlong_null()= 0;
   virtual Int32_null to_int32_null()= 0;
   virtual Double_null to_double_null()= 0;
+  virtual Decimal_null to_decimal_null()= 0;
 
   Stat test_native_prm(const Options &opt);
   Stat test_native_get(const Options &opt);
@@ -182,6 +191,10 @@ public:
   Stat test_d_get(const Options &opt);
   Stat test_d_new(const Options &opt);
 
+  Stat test_dec_prm(const Options &opt);
+  Stat test_dec_get(const Options &opt);
+  Stat test_dec_new(const Options &opt);
+
   Stat test_int32_prm(const Options &opt);
   Stat test_int32_get(const Options &opt);
   Stat test_int32_new(const Options &opt);
@@ -193,6 +206,7 @@ public:
   Stat test_b_vm(VM *vm, const Options &opt);
   Stat test_ll_vm(VM *vm, const Options &opt);
   Stat test_d_vm(VM *vm, const Options &opt);
+  Stat test_dec_vm(VM *vm, const Options &opt);
 };
 
 class Item_null: public Item
@@ -224,6 +238,11 @@ public:
   {
     return 0e0;
   }
+  my_decimal* val_decimal(my_decimal *decimal_buffer) override
+  {
+    decimal_make_zero(decimal_buffer);
+    return decimal_buffer;
+  }
 #endif
   bool val_bool_null(bool *null_value_arg) override
   {
@@ -245,11 +264,17 @@ public:
     *null_value_arg= true;
     return 0e0;
   }
+  my_decimal val_decimal_null(bool *null_value_arg) override
+  {
+    *null_value_arg= true;
+    return my_decimal();
+  }
 
   bool get_bool(bool *to) override { return true; }
   bool get_longlong(longlong *to) override { return true; }
   bool get_int32(int32 *to) override { return true; }
   bool get_double(double *to) override { return true; }
+  bool get_decimal(my_decimal *to) override { return true; }
 
   Bool_null to_bool_null() override
   {
@@ -266,6 +291,10 @@ public:
   Double_null to_double_null() override
   {
     return Double_null();
+  }
+  Decimal_null to_decimal_null() override
+  {
+    return Decimal_null();
   }
 };
 
@@ -302,6 +331,11 @@ public:
   {
     return val;
   }
+  my_decimal *val_decimal(my_decimal *decimal_buffer) override
+  {
+    ulonglong2decimal(val, decimal_buffer);
+    return decimal_buffer;
+  }
 #endif
   bool val_bool_null(bool *null_value_arg) override
   {
@@ -323,25 +357,35 @@ public:
     *null_value_arg= false;
     return val;
   }
+  my_decimal val_decimal_null(bool *null_value_arg) override
+  {
+    *null_value_arg= false;
+    return my_decimal((longlong)val);
+  }
 
   bool get_bool(bool *to) override
-  { 
+  {
     *to= val;
     return false;
   }
   bool get_longlong(longlong *to) override
-  { 
+  {
     *to= val;
     return false;
   }
   bool get_int32(int32 *to) override
-  { 
+  {
     *to= val;
     return false;
   }
   bool get_double(double *to) override
-  { 
+  {
     *to= val;
+    return false;
+  }
+  bool get_decimal(my_decimal *to) override
+  {
+    ulonglong2decimal((longlong)val, to);
     return false;
   }
 
@@ -360,6 +404,10 @@ public:
   Double_null to_double_null() override
   {
     return Double_null(val);
+  }
+  Decimal_null to_decimal_null() override
+  {
+    return Decimal_null((longlong)val);
   }
 };
 
@@ -396,6 +444,11 @@ public:
   {
     return (double) val;
   }
+  my_decimal *val_decimal(my_decimal *decimal_buffer) override
+  {
+    ulonglong2decimal(val, decimal_buffer);
+    return decimal_buffer;
+  }
 #endif
   bool val_bool_null(bool *null_value_arg) override
   {
@@ -417,25 +470,35 @@ public:
     *null_value_arg= false;
     return (double) val;
   }
+  my_decimal val_decimal_null(bool *null_value_arg) override
+  {
+    *null_value_arg= false;
+    return my_decimal((longlong)val);
+  }
 
   bool get_bool(bool *to) override
-  { 
+  {
     *to= val;
     return false;
   }
   bool get_longlong(longlong *to) override
-  { 
+  {
     *to= val;
     return false;
   }
   bool get_int32(int32 *to) override
-  { 
+  {
     *to= (int32) val;
     return false;
   }
   bool get_double(double *to) override
-  { 
+  {
     *to= val;
+    return false;
+  }
+  bool get_decimal(my_decimal *to) override
+  {
+    ulonglong2decimal((longlong)val, to);
     return false;
   }
 
@@ -454,6 +517,10 @@ public:
   Double_null to_double_null() override
   {
     return Double_null((double) val);
+  }
+  Decimal_null to_decimal_null() override
+  {
+    return Decimal_null((longlong) val);
   }
 };
 
@@ -489,6 +556,11 @@ public:
   {
     return (int32) val;
   }
+  my_decimal *val_decimal(my_decimal *decimal_buffer) override
+  {
+    double2decimal(val, decimal_buffer);
+    return decimal_buffer;
+  }
 #endif
   bool val_bool_null(bool *null_value_arg) override
   {
@@ -510,25 +582,35 @@ public:
     *null_value_arg= false;
     return (int32) val;
   }
+  my_decimal val_decimal_null(bool *null_value_arg) override
+  {
+    *null_value_arg= false;
+    return my_decimal(val);
+  }
 
   bool get_bool(bool *to) override
-  { 
+  {
     *to= val;
     return false;
   }
   bool get_longlong(longlong *to) override
-  { 
+  {
     *to= val;
     return false;
   }
   bool get_int32(int32 *to) override
-  { 
+  {
     *to= (int32) val;
     return false;
   }
   bool get_double(double *to) override
-  { 
+  {
     *to= val;
+    return false;
+  }
+  bool get_decimal(my_decimal *to) override
+  {
+    double2decimal((longlong)val, to);
     return false;
   }
 
@@ -538,7 +620,11 @@ public:
   }
   Double_null to_double_null() override
   {
-    return Double_null(val);
+    return Double_null((double)val);
+  }
+  Decimal_null to_decimal_null() override
+  {
+    return Decimal_null((longlong)val);
   }
   Longlong_null to_longlong_null() override
   {
@@ -547,6 +633,159 @@ public:
   Int32_null to_int32_null() override
   {
     return Int32_null((int32) val);
+  }
+};
+
+
+class Item_decimal: public Item
+{
+  my_decimal val;
+public:
+  Item_decimal(my_decimal &val_arg)
+   :val(val_arg)
+  {
+#ifdef HAVE_NULL_VALUE
+    null_value= false;
+#endif
+  }
+  Item_decimal(double dbl)
+   :val(dbl)
+  {
+#ifdef HAVE_NULL_VALUE
+    null_value= false;
+#endif
+  }
+  Item_decimal(longlong lng)
+   :val(lng)
+  {
+#ifdef HAVE_NULL_VALUE
+    null_value= false;
+#endif
+  }
+  enum_field_types field_type() const override { return MYSQL_TYPE_NEWDECIMAL; }
+  void print(string *to) override;
+
+#ifdef HAVE_NULL_VALUE
+  bool val_bool() override
+  {
+    longlong res;
+    decimal2longlong(&val, &res);
+    return (bool) res;
+  }
+  double val_real() override
+  {
+    double res;
+    decimal2double(&val, &res);
+    return res;
+  }
+  longlong val_int() override
+  {
+    longlong res;
+    decimal2longlong(&val, &res);
+    return (longlong) res;
+  }
+  int32 val_int32() override
+  {
+    longlong res;
+    decimal2longlong(&val, &res);
+    return (int32) res;
+  }
+  my_decimal *val_decimal(my_decimal *decimal_buffer) override
+  {
+    return &val;
+  }
+#endif
+  bool val_bool_null(bool *null_value_arg) override
+  {
+    *null_value_arg= false;
+    longlong res;
+    decimal2longlong(&val, &res);
+    return (bool) res;
+  }
+  double val_real_null(bool *null_value_arg) override
+  {
+    *null_value_arg= false;
+    double res;
+    decimal2double(&val, &res);
+    return res;
+  }
+  longlong val_int_null(bool *null_value_arg) override
+  {
+    *null_value_arg= false;
+    longlong res;
+    decimal2longlong(&val, &res);
+    return (longlong) res;
+  }
+  int32 val_int32_null(bool *null_value_arg) override
+  {
+    *null_value_arg= false;
+    longlong res;
+    decimal2longlong(&val, &res);
+    return (int32) res;
+  }
+  my_decimal val_decimal_null(bool *null_value_arg) override
+  {
+    *null_value_arg= false;
+    return my_decimal(val);
+  }
+
+  bool get_bool(bool *to) override
+  {
+    longlong res;
+    decimal2longlong(&val, &res);
+    *to= res;
+    return false;
+  }
+  bool get_longlong(longlong *to) override
+  {
+    decimal2longlong(&val, to);
+    return false;
+  }
+  bool get_int32(int32 *to) override
+  {
+    longlong res;
+    decimal2longlong(&val, &res);
+    *to= (int32) res;
+    return false;
+  }
+  bool get_double(double *to) override
+  {
+    decimal2double(&val, to);
+    return false;
+  }
+  bool get_decimal(my_decimal *to) override
+  {
+    (*to)= val;
+    return false;
+  }
+
+  Bool_null to_bool_null() override
+  {
+    longlong res;
+    decimal2longlong(&val, &res);
+    return Bool_null((bool) res);
+  }
+  Double_null to_double_null() override
+  {
+    double res;
+    decimal2double(&val, &res);
+    return Double_null((double)res);
+  }
+  Decimal_null to_decimal_null() override
+  {
+    return Decimal_null(val);
+  }
+  Longlong_null to_longlong_null() override
+  {
+    longlong res;
+    decimal2longlong(&val, &res);
+    return Longlong_null((longlong) res);
+  }
+  Int32_null to_int32_null() override
+  {
+    longlong res;
+    decimal2longlong(&val, &res);
+    return Int32_null((int32) res);
   }
 };
 
@@ -600,6 +839,7 @@ struct Item_int
   Longlong_null to_longlong_null() { return Longlong_null(val); }
   Int32_null to_int32_null() { return Int32_null(static_cast<int32>(val)); }
   Double_null to_double_null() { return Double_null(val); }
+  Decimal_null to_decimal_null() { return Decimal_null(val); }
 };
 
 struct Item_func
@@ -627,8 +867,11 @@ struct Hybrid_field_type
       m_field_type= std::max(ta, tb);
     else if (ta == MYSQL_TYPE_DOUBLE || tb == MYSQL_TYPE_DOUBLE)
       m_field_type= MYSQL_TYPE_DOUBLE;
-    else
+    else if (ta == MYSQL_TYPE_LONGLONG || tb == MYSQL_TYPE_LONGLONG)
       m_field_type= MYSQL_TYPE_LONGLONG;
+    else
+      m_field_type= MYSQL_TYPE_NEWDECIMAL;
+
   }
   Hybrid_field_type(enum_field_types ta, enum_field_types tb,
                     enum_field_types tc)
@@ -654,6 +897,7 @@ struct Item_func_add : Item_hybrid_func
   Longlong_null to_longlong_null();
   Int32_null to_int32_null();
   Double_null to_double_null();
+  Decimal_null to_decimal_null();
 };
 
 struct Item_func_uminus : Item_hybrid_func
@@ -666,6 +910,7 @@ struct Item_func_uminus : Item_hybrid_func
   Longlong_null to_longlong_null();
   Int32_null to_int32_null();
   Double_null to_double_null();
+  Decimal_null to_decimal_null();
 };
 
 struct Item_func_isnull : Item_func
@@ -694,6 +939,12 @@ struct Item_func_isnull : Item_func
   {
     Bool_null val= Item_func_isnull::to_bool_null();
     return Double_null(val.value, val.is_null);
+  }
+
+  Decimal_null to_decimal_null()
+  {
+    Bool_null val= Item_func_isnull::to_bool_null();
+    return Decimal_null((const longlong)val.value, val.is_null);
   }
 };
 
@@ -736,6 +987,11 @@ static inline Int32_null to_int32_null(Item &item)
 static inline Double_null to_double_null(Item &item)
 {
   SWITCH_CALL_RETURN(item, to_double_null);
+};
+
+static inline Decimal_null to_decimal_null(Item &item)
+{
+  SWITCH_CALL_RETURN(item, to_decimal_null);
 };
 
 Item_hybrid_func::Item_hybrid_func(Item *a)

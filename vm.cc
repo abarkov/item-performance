@@ -81,6 +81,24 @@ neg_ll0:
     m_b0= Bool_null(m_d0.value == i.m_param_d.value);
     break;
 
+  case MOV_DEC_TO_DEC0:
+    m_dec0= i.m_param_dec;
+    break;
+  case MOV_DEC_TO_DEC1:
+    m_dec1= i.m_param_dec;
+    break;
+  case ADD_DEC0_DEC1:
+    m_dec0+= m_dec1;
+    break;
+  case ADD_DEC0_DECI:
+    m_dec0+= i.m_param_dec;
+    break;
+  case NEG_DEC0:
+    m_dec0.neg();
+    break;
+ case EQ_DEC0_DECI: // Not null comparison
+    m_b0= Bool_null(decimal_cmp(&m_dec0, &i.m_param_dec) == 0);
+    break;
   case NOP:
     break;
   }
