@@ -126,6 +126,7 @@ public:
   uint verbose() const { return m_verbose; }
   uint big_test() const { return m_big_test; }
   ulonglong count() const { return m_count; }
+  void set_int32api(bool val) { m_int32api= val; }
   void usage() const
   {
     printf("\n");

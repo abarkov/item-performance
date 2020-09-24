@@ -15,6 +15,23 @@ volatile int x= 1;
 volatile int y= 2;
 
 
+class StatAllNative: public StatAll
+{
+public:
+  StatAllNative(Item *item, const Options &opt)
+   :StatAll(
+#ifdef HAVE_NULL_VALUE
+    item->test_native_old(opt),
+#else
+    Stat(),
+#endif
+    item->test_native_prm(opt),
+    item->test_native_get(opt),
+    item->test_native_new(opt))
+  {}
+};
+
+
 void MethodStat::print(const char *method) const
 {
   size_t length= strlen(method);
@@ -151,34 +168,46 @@ public:
     return stt;
   }
 
+
   MethodStatByType test_native(Item *item, const Options &opt) const
   {
-    StatAll st(
-#ifdef HAVE_NULL_VALUE
-      item->test_native_old(opt),
-#else
-      Stat(),
-#endif
-      item->test_native_prm(opt),
-      item->test_native_get(opt),
-      item->test_native_new(opt));
-    print(item, st);
-    printf("\n");
+
     MethodStatByType stt;
     switch (item->field_type()) {
     case MYSQL_TYPE_NULL:
     case MYSQL_TYPE_BOOL:
+    {
+      StatAllNative st(item, opt);
+      print(item, st);
       stt.st_bool+= MethodStat(st);
       break;
+    }
     case MYSQL_TYPE_LONGLONG:
-      opt.int32api() ?
-      stt.st_int32+= MethodStat(st) :
-      stt.st_longlong+= MethodStat(st);
+    {
+      Options opt_ll(opt);
+      opt_ll.set_int32api(false);
+
+      if (opt.int32api())
+      {
+        StatAllNative st_int32(item, opt);
+        print(item, st_int32);
+        stt.st_int32+= MethodStat(st_int32);
+      }
+      StatAllNative st_ll(item, opt_ll);
+      print(item, st_ll);
+      stt.st_longlong+= MethodStat(st_ll);
       break;
+    }
     case MYSQL_TYPE_DOUBLE:
+    {
+      StatAllNative st(item, opt);
+      print(item, st);
+
       stt.st_double+= MethodStat(st);
       break;
     }
+    }
+    printf("\n");
     return stt;
   }
 
