@@ -79,6 +79,7 @@ neg_ll0:
     break;
  case EQ_D0_DI: // Not null comparison
     m_b0= Bool_null(m_d0.value == i.m_param_d.value);
+    break;
 
   case NOP:
     break;

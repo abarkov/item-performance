@@ -343,7 +343,7 @@ Stat Item::test_b_vm(VM *vm, const Options &opt)
   for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     vm->exec();
-    if (!vm->m_ll0.is_null)
+    if (!vm->m_b0.is_null)
       st.sum_ll+= vm->m_b0.value;
   }
   st.time_spent= Timer().diff(t0);
