@@ -1127,6 +1127,33 @@ void Item_func_eq::print(string *to)
 }
 
 
+bool Item_func_eq::gen(VM *vm)
+{
+  Item_int *ia, *ib;
+  Item_real *da, *db;
+
+  if (arg_count == 2 &&
+      (ia= dynamic_cast<Item_int*>(args[0])) &&
+      (ib= dynamic_cast<Item_int*>(args[1])))
+  {
+    vm->push_back(VM::Instr(VM::MOV_LL_TO_LL0, ia->to_longlong_null()));
+    vm->push_back(VM::Instr(VM::EQ_LL0_LLI, ib->to_longlong_null()));
+    return false;
+  }
+
+  if (arg_count == 2 &&
+      (da= dynamic_cast<Item_real*>(args[0])) &&
+      (db= dynamic_cast<Item_real*>(args[1])))
+  {
+    vm->push_back(VM::Instr(VM::MOV_D_TO_D0, da->to_double_null()));
+    vm->push_back(VM::Instr(VM::EQ_D0_DI, db->to_double_null()));
+    return false;
+  }
+
+  return true;
+}
+
+
 #ifdef HAVE_NULL_VALUE
 bool Item_func_eq::val_bool()
 {

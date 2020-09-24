@@ -486,6 +486,7 @@ public:
   {
     return MYSQL_TYPE_BOOL;
   }
+  bool gen(VM *to) override;
 
 #ifdef HAVE_NULL_VALUE
   bool val_bool() override;

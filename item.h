@@ -190,6 +190,7 @@ public:
   Stat test_ll_get(const Options &opt);
   Stat test_ll_new(const Options &opt);
 
+  Stat test_b_vm(VM *vm, const Options &opt);
   Stat test_ll_vm(VM *vm, const Options &opt);
   Stat test_d_vm(VM *vm, const Options &opt);
 };

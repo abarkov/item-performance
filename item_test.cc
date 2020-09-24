@@ -11,6 +11,12 @@
 #ifdef HAVE_NULL_VALUE
 Stat Item::test_b_old(const Options &opt)
 {
+  if (opt.vm())
+  {
+    VM vm;
+    if (!gen(&vm))
+      return test_b_vm(&vm, opt);
+  }
   Stat st;
   Timer t0;
   for (ulonglong i= 0, count= opt.count() ; i < count; i++)
@@ -326,6 +332,22 @@ Stat Item::test_ll_vm(VM *vm, const Options &opt)
   }
   st.time_spent= Timer().diff(t0);
   st.method= "vm_longlong";
+  return st;
+}
+
+
+Stat Item::test_b_vm(VM *vm, const Options &opt)
+{
+  Stat st;
+  Timer t0;
+  for (ulonglong i= 0, count= opt.count() ; i < count; i++)
+  {
+    vm->exec();
+    if (!vm->m_ll0.is_null)
+      st.sum_ll+= vm->m_b0.value;
+  }
+  st.time_spent= Timer().diff(t0);
+  st.method= "vm_bool";
   return st;
 }
 

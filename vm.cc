@@ -58,6 +58,9 @@ neg_ll0:
   case NEG_LL0:
     m_ll0.neg();
     break;
+  case EQ_LL0_LLI: // Not null comparison
+    m_b0= Bool_null(m_ll0.value == i.m_param_ll.value);
+    break;
 
   case MOV_D_TO_D0:
     m_d0= i.m_param_d;
@@ -74,6 +77,8 @@ neg_ll0:
   case NEG_D0:
     m_d0.neg();
     break;
+ case EQ_D0_DI: // Not null comparison
+    m_b0= Bool_null(m_d0.value == i.m_param_d.value);
 
   case NOP:
     break;
