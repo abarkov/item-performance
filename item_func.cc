@@ -1197,7 +1197,6 @@ int32 Item_func_eq::val_int32()
 
 bool Item_func_eq::val_bool_null(bool *null_value_arg)
 {
-  return cmp.eq_ll_using_val_int_null(null_value_arg);
   switch (cmp_type.m_field_type) {
   case MYSQL_TYPE_NULL:
   case MYSQL_TYPE_BOOL:
@@ -1233,8 +1232,6 @@ double Item_func_eq::val_real_null(bool *null_value_arg)
 
 bool Item_func_eq::get_bool(bool *to)
 {
-  return cmp.eq_ll_using_get_longlong(to);
-
   switch (cmp_type.m_field_type) {
   case MYSQL_TYPE_NULL:
   case MYSQL_TYPE_BOOL:
@@ -1278,8 +1275,6 @@ bool Item_func_eq::get_double(double *to)
 
 Bool_null Item_func_eq::to_bool_null()
 {
-  return cmp.eq_ll_using_to_longlong_null();
-
   switch (cmp_type.m_field_type) {
   case MYSQL_TYPE_NULL:
   case MYSQL_TYPE_BOOL:
