@@ -4,3 +4,5 @@ item_test.o
 test
 test.o
 vm.o
+decimal.o
+dtoa.o

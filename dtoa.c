@@ -37,7 +37,9 @@
 
  ***************************************************************/
 
+#include <stdlib.h>
 #include "my_types.h"
+
 //#include "strings_def.h"
 //#include <my_base.h> /* for EOVERFLOW on Windows */
 
@@ -738,7 +740,7 @@ static char *dtoa_alloc(int i, Stack_alloc *alloc)
     alloc->free+= aligned_size;
   }
   else
-    rv= malloc(i);
+    rv= (char *) malloc(i);
   return rv;
 }
 

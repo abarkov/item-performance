@@ -7,8 +7,8 @@ all: test
 
 INCLUDES=item.h item_func.h timer.h sql_type_double.h sql_type_int.h sql_type_bool.h vm.h opt.h
 
-test: test.o item_test.o item_func.o vm.o $(INCLUDES)
-	$(CXX) $(CXXFLAGS) test.o item_test.o item_func.o vm.o -o test -lstdc++
+test: test.o item_test.o item_func.o vm.o dtoa.o decimal.o $(INCLUDES)
+	$(CXX) $(CXXFLAGS) test.o item_test.o item_func.o vm.o dtoa.o decimal.o -o test -lstdc++
 
 test.o: test.cc $(INCLUDES)
 	$(CXX) $(CXXFLAGS) -c test.cc -o test.o
@@ -22,6 +22,11 @@ item_func.o: item_func.cc $(INCLUDES)
 vm.o: vm.cc $(INCLUDES)
 	$(CXX) $(CXXFLAGS) -c vm.cc -o vm.o
 
+dtoa.o: dtoa.c $(INCLUDES)
+	$(CXX) $(CXXFLAGS) -c dtoa.c -o dtoa.o
+
+decimal.o: decimal.c $(INCLUDES)
+	$(CXX) $(CXXFLAGS) -c decimal.c -o decimal.o
 
 clean:
-	rm -f test.o item_test.o item_func.o vm.o test
+	rm -f test.o item_test.o item_func.o vm.o dtoa.o decimal.o test
