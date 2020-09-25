@@ -7,13 +7,40 @@
 
 class my_decimal:public decimal_t
 {
-  public:
+  void fix_buffer_pointer() { buf= buffer; }
+
+public:
   decimal_digit_t buffer[DECIMAL_BUFF_LENGTH];
   my_decimal(decimal_t &val): decimal_t(val)
   {
     init();
     for (uint i= 0; i < DECIMAL_BUFF_LENGTH; i++)
       buffer[i]= val.buf[i];
+  }
+
+  my_decimal(const my_decimal &val): decimal_t(val)
+  {
+    init();
+    for (uint i= 0; i < DECIMAL_BUFF_LENGTH; i++)
+      buffer[i]= val.buf[i];
+  }
+
+  my_decimal(const my_decimal &&val): decimal_t(val)
+  {
+    init();
+    for (uint i= 0; i < DECIMAL_BUFF_LENGTH; i++)
+      buffer[i]= val.buf[i];
+  }
+
+  my_decimal& operator=(const my_decimal &rhs)
+  {
+    if (this == &rhs)
+      return *this;
+    decimal_t::operator=(rhs);
+    for (uint i= 0; i < DECIMAL_BUFF_LENGTH; i++)
+      buffer[i]= rhs.buffer[i];
+    fix_buffer_pointer();
+    return *this;
   }
 
   my_decimal()

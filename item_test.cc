@@ -466,8 +466,12 @@ Stat Item::test_dec_vm(VM *vm, const Options &opt)
   for (ulonglong i= 0, count= opt.count() ; i < count; i++)
   {
     vm->exec();
-    if (!vm->m_d0.is_null)
-      st.sum_d+= vm->m_d0.value;
+    if (!vm->m_dec0.is_null)
+    {
+      double dbl;
+      decimal2double(&vm->m_dec0, &dbl);
+      st.sum_d+= dbl;
+    }
   }
   st.time_spent= Timer().diff(t0);
   st.method= "vm_decimal";
