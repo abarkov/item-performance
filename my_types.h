@@ -17,6 +17,7 @@
 #define my_max(a,b)  max(a,b)
 #define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
 #define my_alloca(SZ) _alloca((size_t) (SZ))
+#define my_afree(PTR) ((void)0)
 #else
 #define my_max(a,b)  std::max(a,b)
 #define my_alloca(SZ) alloca((size_t) (SZ))
