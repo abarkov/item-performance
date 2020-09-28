@@ -15,16 +15,18 @@
 
 #ifdef WIN32
 #define my_max(a,b)  max(a,b)
+#define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
+#define my_alloca(SZ) _alloca((size_t) (SZ))
 #else
 #define my_max(a,b)  std::max(a,b)
+#define my_alloca(SZ) alloca((size_t) (SZ))
+#define my_afree(PTR) ((void)0)
 #endif
 
 
 #ifdef WIN32
 typedef unsigned long ulong;
 typedef unsigned int uint;
-#define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
-#define my_alloca(SZ) _alloca((size_t) (SZ))
 #endif
 
 typedef int8_t int8;
@@ -110,9 +112,6 @@ typedef enum {
 
 size_t my_gcvt(double x, my_gcvt_arg_type type, int width, char *to,
                my_bool *error);
-
-#define my_alloca(SZ) alloca((size_t) (SZ))
-#define my_afree(PTR) ((void)0)
 
 // little endian
 /* these two are for uniformity */
