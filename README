@@ -7,14 +7,32 @@ make -f Makefile.standalone
 Compiling and running with Google Benchmark libary
 ==================================================
 
+Linux:
+
+git clone https://github.com/abarkov/item-performance.git
+cd item-performance
 git submodule init
 git submodule update
-mkdir build_opt
-cd build_opt
+mkdir build_rel
+cd build_rel
 cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 cmake --build .
 ./test
 ./gbench
+
+
+Windows:
+
+git clone https://github.com/abarkov/item-performance.git
+cd item-performance
+git submodule init
+git submodule update
+mkdir build_rel
+cd build_rel
+cmake ..
+cmake --build . --config RelWithDebInfo
+.\RelWithDebInfo\test.exe
+.\RelWithDebInfo\gbench.exe
 
 
 Available command line options:
