@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
-#include <sys/time.h>
+#include "my_types.h"
 #include "timer.h"
 
 #include "opt.h"

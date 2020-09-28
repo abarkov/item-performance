@@ -1,13 +1,12 @@
 #ifndef MYSQL_COM_H
 #define MYSQL_COM_H
 
-#define likely(x)      __builtin_expect(!!(x), 1)
-#define unlikely(x)    __builtin_expect(!!(x), 0)
-
 #if defined (__clang__)
 #define COMPILER "clang"
 #elif defined(__GNUC__)
 #define COMPILER "gcc"
+#elif defined(WIN32)
+#define COMPILER "WIN32"
 #endif
 
 

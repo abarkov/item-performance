@@ -42,7 +42,7 @@ public:
     if (ta == tb)
       m_field_type= ta;
     else if (ta == MYSQL_TYPE_NULL || tb == MYSQL_TYPE_NULL)
-      m_field_type= std::max(ta, tb);
+      m_field_type= my_max(ta, tb);
     else if (ta == MYSQL_TYPE_DOUBLE || tb == MYSQL_TYPE_DOUBLE)
       m_field_type= MYSQL_TYPE_DOUBLE;
     else if (ta == MYSQL_TYPE_LONGLONG || tb == MYSQL_TYPE_LONGLONG)

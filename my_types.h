@@ -2,12 +2,31 @@
 #ifndef MY_TYPES_H
 #define MY_TYPES_H
 
+#ifndef __SIZEOF_POINTER__
+#define __SIZEOF_POINTER__ 8
+#endif
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
 #include <float.h>
+
+#ifdef WIN32
+#define my_max(a,b)  max(a,b)
+#else
+#define my_max(a,b)  std::max(a,b)
+#endif
+
+
+#ifdef WIN32
+typedef unsigned long ulong;
+typedef unsigned int uint;
+#define bzero(b,len) (memset((b), '\0', (len)), (void) 0)
+#define my_alloca(SZ) _alloca((size_t) (SZ))
+#endif
+
 typedef int8_t int8;
 typedef uint8_t uint8;
 typedef int16_t int16;
@@ -44,9 +63,14 @@ typedef unsigned char uchar;
 #define DBUG_RETURN(C) return(C)
 #define DBUG_VOID_RETURN return
 
+#ifdef WIN32
+#define likely(x)      (x)
+#define unlikely(x)    (x)
+#define __builtin_unreachable() do { assert(0); } while (0)
+#else
 #define likely(x)      __builtin_expect(!!(x), 1)
 #define unlikely(x)    __builtin_expect(!!(x), 0)
-
+#endif
 #define UNINIT_VAR(x) x
 
 #define TRASH_ALLOC(A,B)

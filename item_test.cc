@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
-#include <sys/time.h>
 #include "timer.h"
 
 #include "item.h"
