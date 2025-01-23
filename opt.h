@@ -81,8 +81,8 @@ public:
     m_verbose(0),
     m_error(0),
     m_vm(0),
-    m_big_test(0),
     m_int32api(false),
+    m_big_test(0),
     m_count(10*1000*1000ULL)
   {
     shift(&ac, &av);
