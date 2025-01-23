@@ -36,7 +36,6 @@ void MethodStat::print(const char *method) const
 {
   size_t length= strlen(method);
   int space_count= length < 9 ? (int) (9 - length) : 0;
-  const char *sp="";
   printf("val_%s        %-*s%f\n", method, space_count, "", val_xxx);
   printf("val_%s_null   %-*s%f\n", method, space_count, "", val_xxx_null);
   printf("get_%s        %-*s%f\n", method, space_count, "", get_xxx);
@@ -403,7 +402,6 @@ public:
   const char *name() const override { return "bool_last_value"; }
   MethodStatByType run(const Options &opt) const override
   {
-    Item *nl= new Item_null;
     Item *b0= new Item_bool(false);
     Item *lv_b0= new Item_func_last_value(b0);
     Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
@@ -455,6 +453,7 @@ public:
       add_nl_ll0,
       add_ll_ll,
       add_ll_ll_ll0,
+      add_ll_ll_ll1,
       add_ll_ll_ll_ll_ll0,
       NULL
     };
@@ -471,7 +470,6 @@ public:
   {
     Item *nl= new Item_null;
     Item *ll0= new Item_int(x);
-    Item *ll1= new Item_int(y);
     Item *coalesce_ll= new Item_func_coalesce(ll0);          // COALESCE(INT)
     Item *coalesce_nl_nl= new Item_func_coalesce(nl, nl);    // COALESCE(NULL,NULL)
     Item *coalesce_nl_ll0= new Item_func_coalesce(nl,ll0);   // COALESCE(NULL,INT)
@@ -496,7 +494,6 @@ public:
   const char *name() const override { return "ll_last_value"; }
   MethodStatByType run(const Options &opt) const override
   {
-    Item *nl= new Item_null;
     Item *b0= new Item_int(x);
     Item *lv_b0= new Item_func_last_value(b0);
     Item *lv_b0_b0_b0= new Item_func_last_value(b0, b0, b0);
@@ -632,7 +629,6 @@ public:
   const char *name() const override { return "double_last_value"; }
   MethodStatByType run(const Options &opt) const override
   {
-    Item *nl= new Item_null;
     Item *d0= new Item_real(x);
     Item *lv_b0= new Item_func_last_value(d0);
     Item *lv_b0_b0_b0= new Item_func_last_value(d0, d0, d0);
@@ -746,7 +742,6 @@ public:
   const char *name() const override { return "decimal_last_value"; }
   MethodStatByType run(const Options &opt) const override
   {
-    Item *nl= new Item_null;
     Item *d0= new Item_real((longlong)x);
     Item *lv_b0= new Item_func_last_value(d0);
     Item *lv_b0_b0_b0= new Item_func_last_value(d0, d0, d0);
