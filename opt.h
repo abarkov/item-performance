@@ -2,6 +2,7 @@
 #define OPT_H_INCLUDED
 
 #include <string.h>
+#include <time.h>
 
 typedef unsigned long long ulonglong;
 typedef long long longlong;
@@ -17,6 +18,7 @@ class Options
   bool m_int32api;
   uint m_big_test;
   ulonglong m_count;
+  uint m_seed;
 
   void shift(int *ac, char ***av)
   {
@@ -83,7 +85,8 @@ public:
     m_vm(0),
     m_int32api(false),
     m_big_test(0),
-    m_count(10*1000*1000ULL)
+    m_count(10*1000*1000ULL),
+    m_seed((uint) time(NULL))
   {
     shift(&ac, &av);
     m_used_options++;
@@ -106,6 +109,7 @@ public:
     else if (!strncmp(av, "--big-test=", 11)) m_big_test= atoi(av+11);
     else if (!strcmp(av, "--big-test"))       m_big_test++;
     else if (!strncmp(av, "--help", 6))       m_error= true;
+    else if (!strncmp(av, "--seed=", 7))      m_seed= (uint) atoi(av+7);
     else if (!strncmp(av, "--count=", 8))
     {
       if (get_ulonglong_size(&m_count, "--count", av + 8))
@@ -126,6 +130,7 @@ public:
   uint verbose() const { return m_verbose; }
   uint big_test() const { return m_big_test; }
   ulonglong count() const { return m_count; }
+  uint seed() const { return m_seed; }
   void set_int32api(bool val) { m_int32api= val; }
   void usage() const
   {

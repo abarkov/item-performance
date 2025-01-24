@@ -761,6 +761,8 @@ public:
   }
   MethodStatByType run(const Options &opt) const override
   {
+    srand(opt.seed());
+    printf ("Using seed: %u\n\n", opt.seed());
     std::pair<Item *, std::vector<std::unique_ptr<Item>>> g_random_tree=
       generate_tree(10);
     MethodStatByType st;

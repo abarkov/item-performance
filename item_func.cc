@@ -1570,16 +1570,13 @@ Decimal_null Item_func_eq::to_decimal_null()
 }
 
 static inline size_t get_random_int() {
-  static std::random_device rd;
-  static std::default_random_engine dre(rd());
-  static std::uniform_int_distribution<size_t> ud(1, 20000);
-  return ud(dre);
+  return rand();
 }
 
 Item *node_factory(size_t depth_left,
                    std::vector<std::unique_ptr<Item>> &storage)
 {
-  switch (get_random_int() % 17)
+  switch (rand() % 17)
   {
   case 0:
     return new Item_int(0x27);
