@@ -789,7 +789,7 @@ bool Item_func_isnull::val_bool()
   case MYSQL_TYPE_NEWDECIMAL:
     {
       my_decimal decimal_buffer;
-      my_decimal *res= args[0]->val_decimal(&decimal_buffer);
+      args[0]->val_decimal(&decimal_buffer);
       break;
     }
   }
