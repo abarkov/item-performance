@@ -505,7 +505,8 @@ double Item_cond_or::val_real_null(bool *null_value_arg)
 
 my_decimal Item_cond_or::val_decimal_null(bool *null_value_arg)
 {
-  return Item_cond_or::val_decimal_null(null_value_arg);
+  bool b= val_bool_null(null_value_arg);
+  return my_decimal((longlong) b);
 }
 
 
